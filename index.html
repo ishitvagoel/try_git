@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="How Git actually works — ranked by what developers really type. Setup, stats, internals, glossary, command reference, workflows, conflicts, quiz and a printable cheat sheet.">
+<meta name="description" content="How Git actually works — ranked by what developers really type. Setup, configuration, internals, rebasing, conflicts, pushing after a rebase, rescue scenarios, quiz and a printable cheat sheet.">
 <meta name="theme-color" content="#0b0e14">
 <title>git, decoded — how Git actually works, ranked by real usage</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0e14'/%3E%3Cpath d='M8 24V13c0-3 2-5 5-5h6' stroke='%23f0512f' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='26' r='3.4' fill='%23f0512f'/%3E%3Ccircle cx='22' cy='8' r='3.4' fill='%2358a6ff'/%3E%3C/svg%3E">
@@ -311,7 +311,10 @@ section{scroll-margin-top:calc(var(--nav-h) + 20px)}
       <a href="#glossary">Glossary</a>
       <a href="#commands">Commands</a>
       <a href="#workflows">Workflows</a>
+      <a href="#rebasing">Rebasing</a>
       <a href="#conflicts" class="nav-danger">Conflicts</a>
+      <a href="#pushing">Pushing</a>
+      <a href="#rescue">Rescue</a>
       <a href="#quiz">Quiz</a>
       <a href="#cheatsheet">Cheat sheet</a>
     </nav>
@@ -325,7 +328,10 @@ section{scroll-margin-top:calc(var(--nav-h) + 20px)}
   <a href="#glossary">Glossary</a>
   <a href="#commands">Commands</a>
   <a href="#workflows">Workflows</a>
+  <a href="#rebasing">Rebasing</a>
   <a href="#conflicts">Conflicts</a>
+  <a href="#pushing">Pushing</a>
+  <a href="#rescue">Rescue</a>
   <a href="#quiz">Quiz</a>
   <a href="#cheatsheet">Cheat sheet</a>
 </nav>
@@ -372,7 +378,7 @@ section{scroll-margin-top:calc(var(--nav-h) + 20px)}
   <div class="wrap">
     <div class="sec-head reveal">
       <p class="kicker">01 · Setup</p>
-      <h2>Get Git ready in four moves</h2>
+      <h2>Get Git ready in eight moves</h2>
       <p class="sec-sub">Install once, configure your identity, and you’ll never wonder why commits say “unknown” again.</p>
     </div>
     <div class="setup-grid reveal">
@@ -385,6 +391,21 @@ git config --global alias.lg "log --oneline --graph --decorate -20"</code><butto
       <article class="setup-step"><span class="step-num">4</span><h3>First repo</h3><p>Turn any folder into a repository, or clone an existing one.</p><div class="ex"><code>git init
 # or
 git clone https://github.com/org/repo.git</code><button class="copy" type="button" data-copy="git init">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">5</span><h3>Know your scopes</h3><p>Config resolves <code>--system</code> → <code>--global</code> → <code>--local</code>; the nearest wins. Override identity per repo without touching global.</p><div class="ex"><code>git config --list --show-origin
+git config --local user.email "work@company.com"</code><button class="copy" type="button" data-copy="git config --list --show-origin&#10;git config --local user.email &quot;work@company.com&quot;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">6</span><h3>Two identities, one machine</h3><p><code>includeIf</code> loads a different config by directory — work email inside <code>~/work/</code>, personal everywhere else.</p><div class="ex"><code># ~/.gitconfig
+[includeIf "gitdir:~/work/"]
+  path = ~/.gitconfig-work</code><button class="copy" type="button" data-copy="# ~/.gitconfig&#10;[includeIf &quot;gitdir:~/work/&quot;]&#10;  path = ~/.gitconfig-work">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">7</span><h3>Credentials &amp; signing</h3><p>Tokens never go in remote URLs — use <code>gh auth setup-git</code> or a credential manager. SSH signing makes your history verifiable.</p><div class="ex"><code>gh auth setup-git
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519.pub
+git config --global commit.gpgsign true</code><button class="copy" type="button" data-copy="gh auth setup-git&#10;git config --global gpg.format ssh&#10;git config --global user.signingkey ~/.ssh/id_ed25519.pub&#10;git config --global commit.gpgsign true">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">8</span><h3>Safety &amp; hygiene</h3><p>Prune dead branches, see the base in conflicts, record resolutions once and reuse them forever. Team hooks live in the repo via <code>core.hooksPath</code>; personal ignores in <code>core.excludesFile</code>.</p><div class="ex"><code>git config --global fetch.prune true
+git config --global push.default current
+git config --global push.autoSetupRemote true
+git config --global merge.conflictStyle zdiff3
+git config --global rerere.enabled true
+git config --global rerere.autoupdate true</code><button class="copy" type="button" data-copy="git config --global fetch.prune true&#10;git config --global push.default current&#10;git config --global push.autoSetupRemote true&#10;git config --global merge.conflictStyle zdiff3&#10;git config --global rerere.enabled true&#10;git config --global rerere.autoupdate true">copy</button></div></article>
     </div>
     <p class="setup-verify reveal">Verify: <code>git config --list --show-origin | head</code> — you should see your name, email, and defaults.</p>
   </div>
@@ -542,7 +563,7 @@ git push -u origin HEAD</code><button class="copy" type="button" data-copy="git 
       </article>
       <article class="flow-card">
         <h3>Update your branch</h3>
-        <p>Bring <code>main</code> into your feature without surprise history rewrites on shared branches.</p>
+        <p>Bring <code>main</code> into your branch. Personal branch? Rebase — clean and linear. Shared branch? Merge — never rewrite what others built on.</p>
         <ol class="flow-steps">
           <li><span>1</span><code>git fetch origin</code></li>
           <li><span>2</span>merge or rebase onto latest main</li>
@@ -552,6 +573,69 @@ git push -u origin HEAD</code><button class="copy" type="button" data-copy="git 
 git rebase origin/main
 # or: git merge origin/main</code><button class="copy" type="button" data-copy="git fetch origin&#10;git rebase origin/main">copy</button></div>
       </article>
+      <article class="flow-card">
+        <h3>Fork → PR → stay in sync</h3>
+        <p>Your fork is <code>origin</code>; the real repo is <code>upstream</code>. Rebase onto upstream, publish with a lease.</p>
+        <ol class="flow-steps">
+          <li><span>1</span><code>git remote add upstream …</code></li>
+          <li><span>2</span><code>git fetch upstream && git rebase upstream/main</code></li>
+          <li><span>3</span><code>git push --force-with-lease origin HEAD</code></li>
+        </ol>
+<div class="ex"><code>git remote add upstream https://github.com/org/repo.git
+git fetch upstream
+git switch feature/x
+git rebase upstream/main
+git push --force-with-lease origin HEAD</code><button class="copy" type="button" data-copy="git remote add upstream https://github.com/org/repo.git&#10;git fetch upstream&#10;git switch feature/x&#10;git rebase upstream/main&#10;git push --force-with-lease origin HEAD">copy</button></div>
+      </article>
+      <article class="flow-card">
+        <h3>Clean PR before review</h3>
+        <p><code>wip</code> / <code>fix typo</code> noise? Tag repairs with <code>--fixup</code> and let autosquash fold them into the commit they belong to.</p>
+        <ol class="flow-steps">
+          <li><span>1</span><code>git commit --fixup abc1234</code></li>
+          <li><span>2</span><code>git rebase -i --autosquash origin/main</code></li>
+          <li><span>3</span><code>git push --force-with-lease</code></li>
+        </ol>
+<div class="ex"><code>git commit --fixup abc1234
+GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash origin/main
+git push --force-with-lease</code><button class="copy" type="button" data-copy="git commit --fixup abc1234&#10;GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash origin/main&#10;git push --force-with-lease">copy</button></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="sec light alt" id="rebasing">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">07 · Rebasing</p>
+      <h2>Rebasing, properly</h2>
+      <p class="sec-sub">Rebase replays your commits onto a new base — same content, brand-new objects, brand-new SHAs. Every benefit and every hazard follows from that one fact.</p>
+    </div>
+    <div class="setup-grid reveal">
+      <article class="setup-step"><span class="step-num">1</span><h3>Update onto latest main</h3><p>Replay your commits on top of the new tip — history stays linear, no merge noise. Conflicts return per replayed commit, so expect round 2, 3 …</p><div class="ex"><code>git fetch origin
+git rebase origin/main
+# daily habit once configured:
+git pull --rebase --autostash</code><button class="copy" type="button" data-copy="git fetch origin&#10;git rebase origin/main&#10;# daily habit once configured:&#10;git pull --rebase --autostash">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">2</span><h3>Interactive tidy-up</h3><p>The todo list rewrites history on purpose: <code>pick</code> keep · <code>reword</code> message · <code>squash</code>/<code>fixup</code> meld into previous · <code>drop</code> delete · <code>edit</code> stop to amend. <code>exec</code> runs tests per commit.</p><div class="ex"><code>git rebase -i origin/main
+# reorder lines, change verbs, save &amp; close</code><button class="copy" type="button" data-copy="git rebase -i origin/main&#10;# reorder lines, change verbs, save &amp; close">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">3</span><h3>Review round-trips</h3><p>Reviewer asked for changes inside commit 2? Record a fixup and autosquash it in. Turn it on permanently with <code>rebase.autoSquash true</code>.</p><div class="ex"><code>git commit --fixup abc1234
+git rebase -i --autosquash origin/main
+git push --force-with-lease</code><button class="copy" type="button" data-copy="git commit --fixup abc1234&#10;git rebase -i --autosquash origin/main&#10;git push --force-with-lease">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">4</span><h3>Conflicts during rebase</h3><p>Same drill as a merge — with one inversion: <code>--theirs</code> is the commit <em>being replayed</em>, <code>--ours</code> is the base you’re building on. Three exits: continue, skip (drop current commit), abort (undo all).</p><div class="ex"><code># resolve markers, then:
+git add &lt;file&gt;
+git rebase --continue
+# or: git rebase --skip / --abort</code><button class="copy" type="button" data-copy="# resolve markers, then:&#10;git add &lt;file&gt;&#10;git rebase --continue&#10;# or: git rebase --skip / --abort">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">5</span><h3>Surgery with --onto</h3><p>Transplant a range: replay the commits after <code>hotstart</code> onto a new base. Use it to salvage work branched from the wrong place.</p><div class="ex"><code>git rebase --onto main hotstart feature
+# rescue two commits from a doomed branch:
+git rebase --onto new-base a1b2c3d^ branch</code><button class="copy" type="button" data-copy="git rebase --onto main hotstart feature&#10;# rescue two commits from a doomed branch:&#10;git rebase --onto new-base a1b2c3d^ branch">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">6</span><h3>Undo a finished rebase</h3><p>The rewritten commits aren’t gone — <code>ORIG_HEAD</code> marks where you were, and <code>reflog</code> lists every move HEAD made.</p><div class="ex"><code>git reset --hard ORIG_HEAD
+# or:
+git reflog
+git reset --hard HEAD@{4}</code><button class="copy" type="button" data-copy="git reset --hard ORIG_HEAD&#10;# or:&#10;git reflog&#10;git reset --hard HEAD@{4}">copy</button></div></article>
+    </div>
+    <div class="laws reveal">
+      <div class="law"><div class="law-num">01</div><div><h3>The golden rule</h3><p>Never rebase commits other people have built on. Your branch, your rewrite; shared branch, merge instead. If a rewrite touches anything public, announce it first and hand teammates the refresh recipe from section 09.</p></div></div>
+      <div class="law"><div class="law-num">02</div><div><h3>Rebase onto, don’t merge down</h3><p><code>git merge origin/main</code> on a long-lived feature adds a merge commit every sync; after five syncs the PR is unreadable. <code>git rebase origin/main</code> keeps “my work sits on top of main” — reviewers and <code>git log</code> stay sane.</p></div></div>
+      <div class="law"><div class="law-num">03</div><div><h3>Merges need special handling</h3><p>Rebasing a branch that contains merge commits flattens them. Use <code>git rebase --rebase-merges</code> to rebuild the topology — or simply merge for that branch. Both are fine; silent flattening is not.</p></div></div>
     </div>
   </div>
 </section>
@@ -559,15 +643,17 @@ git rebase origin/main
 <section class="sec light" id="conflicts">
   <div class="wrap">
     <div class="sec-head reveal">
-      <p class="kicker kr">07 · Conflicts</p>
+      <p class="kicker kr">08 · Conflicts</p>
       <h2>When Git can’t decide for you</h2>
       <p class="sec-sub">A conflict means two edits touched the same lines. You choose the final truth, then tell Git you’re done.</p>
     </div>
     <div class="conflict-grid">
       <div class="conflict-panel reveal">
-        <h3>markers in the file</h3>
+        <h3>markers in the file — zdiff3 style</h3>
         <div class="conflict-body"><span class="mk">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
 your version on the current branch
+<span class="base">||||||| base</span>
+what both sides started from
 <span class="base">=======</span>
 incoming version from the other side
 <span class="th">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/login</span></div>
@@ -581,17 +667,155 @@ git merge --continue
 # or: git rebase --continue</code><button class="copy" type="button" data-copy="git add path/to/file&#10;git merge --continue">copy</button></div></div>
         <div class="cstep"><h4>Abort if needed</h4><p>Bail out cleanly when the merge isn’t worth finishing yet.</p><div class="ex"><code>git merge --abort
 git rebase --abort</code><button class="copy" type="button" data-copy="git merge --abort">copy</button></div></div>
+        <div class="cstep"><h4>Upgrade your view</h4><p><code>zdiff3</code> inserts the shared base between the two sides so you see <em>why</em> they diverged. <code>rerere</code> records each resolution and replays it automatically when the same conflict returns on a later commit.</p><div class="ex"><code>git config --global merge.conflictStyle zdiff3
+git config --global rerere.enabled true
+git config --global rerere.autoupdate true</code><button class="copy" type="button" data-copy="git config --global merge.conflictStyle zdiff3&#10;git config --global rerere.enabled true&#10;git config --global rerere.autoupdate true">copy</button></div></div>
       </div>
+    </div>
+
+    <div class="setup-grid reveal" style="margin-top:28px">
+      <article class="setup-step"><h3>Triage before editing</h3><p>Not every conflict shows markers. <code>UU</code> both modified · <code>AA</code> both added · <code>DU</code>/<code>UD</code> one side deleted · <code>AU</code>/<code>UA</code> one side added · rename/rename forces one new name.</p><div class="ex"><code>git status --short
+git diff --name-only --diff-filter=U</code><button class="copy" type="button" data-copy="git status --short&#10;git diff --name-only --diff-filter=U">copy</button></div></article>
+      <article class="setup-step"><h3>Whole-file decisions</h3><p>When one side should simply win, skip line surgery. In a <em>merge</em>: ours = your branch. In a <em>rebase</em>: inverted — theirs = the commit being replayed.</p><div class="ex"><code>git checkout --ours &lt;file&gt;   # merge: keep your side
+git checkout --theirs &lt;file&gt; # merge: take incoming
+git add &lt;file&gt;</code><button class="copy" type="button" data-copy="git checkout --ours &lt;file&gt;   # merge: keep your side&#10;git checkout --theirs &lt;file&gt; # merge: take incoming&#10;git add &lt;file&gt;">copy</button></div></article>
+      <article class="setup-step"><h3>Delete/modify &amp; add/add</h3><p>These have no markers — <code>git status</code> names them. Accept the delete with <code>git rm</code>, the change with <code>git add</code>. Add/add carries both files with in-file markers; resolve like content.</p><div class="ex"><code>git status
+# "deleted by us: app/old.py" + your edits
+git rm app/old.py    # accept delete
+git add app/old.py   # or: keep your version</code><button class="copy" type="button" data-copy="git status&#10;# &quot;deleted by us: app/old.py&quot; + your edits&#10;git rm app/old.py    # accept delete&#10;git add app/old.py   # or: keep your version">copy</button></div></article>
+      <article class="setup-step"><h3>Tools for the hard ones</h3><p><code>git mergetool</code> walks every conflicted file in a real 3-way editor (meld, KDiff3, VS Code, difftastic). Binary files: pick a side, regenerate, then mark them unmergeable so Git stops trying to line-merge them.</p><div class="ex"><code>git config --global merge.tool meld
+git mergetool
+# once per pattern:
+echo "*.png binary" &gt;&gt; .gitattributes</code><button class="copy" type="button" data-copy="git config --global merge.tool meld&#10;git mergetool&#10;# once per pattern:&#10;echo &quot;*.png binary&quot; &gt;&gt; .gitattributes">copy</button></div></article>
+    </div>
+
+    <div class="laws reveal">
+      <div class="law"><div class="law-num">✓</div><div><h3>Finish the operation you started</h3><p>Every conflicted state has its own verb: <code>merge</code> → <code>git add -A</code> then <code>git commit</code> (or <code>merge --continue</code>) · <code>rebase</code> → <code>git add</code> then <code>rebase --continue</code>, once per stopped commit · <code>cherry-pick</code> → <code>cherry-pick --continue</code> · <code>stash pop</code> → resolve in place; changes are already applied, drop the entry when happy. Never mix verbs: <code>merge --continue</code> mid-rebase just errors.</p></div></div>
+      <div class="law"><div class="law-num">!</div><div><h3>Prove it’s really over</h3><p>Before continuing, scan for forgotten markers and half-resolved files: <code>git diff --check</code> flags leftover <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, and <code>git status</code> must be free of “both modified”. Run the tests — resolving is not the same as working.</p></div></div>
     </div>
   </div>
 </section>
 
+<section class="sec" id="pushing">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">09 · Push after rebase</p>
+      <h2>Merging &amp; pushing after a rewrite</h2>
+      <p class="sec-sub">Rebase gave your commits new SHAs; the remote still points at the old ones. The rejection below is not a bug — it is Git noticing the mismatch on your behalf.</p>
+    </div>
+
+    <div class="conflict-panel reveal">
+      <h3>the rejection, verbatim</h3>
+      <div class="conflict-body"><span class="p">$ git push</span>
+To github.com:org/repo.git
+ <span class="mk"> ! [rejected]        feature/x -&gt; feature/x (non-fast-forward)</span>
+<span class="th">error: failed to push some refs to 'github.com:org/repo.git'</span>
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.</div>
+    </div>
+    <div class="conflict-panel reveal" style="margin-top:18px">
+      <h3>why it happens</h3>
+      <div class="conflict-body">old main ── A ── B ── C'   ← what the remote still has (pre-rebase)
+                ╲
+new main ── D ── A' ── B' ── C'  ← what you rebased to (same work, new SHAs)
+
+plain push can only add commits after the remote tip.
+The remote's C' is not an ancestor of your history →
+<span class="th">non-fast-forward.</span> And no: <span class="base">git pull now would merge the old commits back in.</span></div>
+    </div>
+
+    <div class="flow-grid reveal" style="margin-top:28px">
+      <article class="flow-card">
+        <h3>Publish a rewrite safely</h3>
+        <p><code>--force-with-lease</code> forces only if the remote tip is still exactly what you last fetched. If a teammate pushed meanwhile, the push refuses and nothing is clobbered. Bare <code>-f</code> on a shared branch is how work disappears.</p>
+<div class="ex"><code>git push --force-with-lease origin HEAD
+# alias it so the safe one is the fast one:
+git config --global alias.fp "push --force-with-lease"</code><button class="copy" type="button" data-copy="git push --force-with-lease origin HEAD&#10;# alias it so the safe one is the fast one:&#10;git config --global alias.fp &quot;push --force-with-lease&quot;">copy</button></div>
+      </article>
+      <article class="flow-card">
+        <h3>Teammate: refresh after a rewrite</h3>
+        <p>Once the branch owner announces the rebase, everyone resets their local copy onto the new history — your old local commits stay reachable via reflog.</p>
+<div class="ex"><code>git fetch origin
+git switch feature/x
+git reset --hard origin/feature/x</code><button class="copy" type="button" data-copy="git fetch origin&#10;git switch feature/x&#10;git reset --hard origin/feature/x">copy</button></div>
+      </article>
+      <article class="flow-card">
+        <h3>If the force-push went wrong</h3>
+        <p>Nothing is instantly gone: the pre-rewrite tip sits in your local reflog, and GitHub’s branch compare / PR timeline still know the old SHAs. Recreate, then coordinate before touching remotes again.</p>
+<div class="ex"><code>git reflog
+# find the old tip, e.g. 9f2c1ab:
+git branch rescue 9f2c1ab
+git push origin rescue</code><button class="copy" type="button" data-copy="git reflog&#10;# find the old tip, e.g. 9f2c1ab:&#10;git branch rescue 9f2c1ab&#10;git push origin rescue">copy</button></div>
+      </article>
+    </div>
+
+    <div class="flow-grid reveal" style="margin-top:18px">
+      <article class="flow-card">
+        <h3>Landing: merge commit</h3>
+        <p><code>Create a merge commit</code> keeps the exact review topology — branch shape forever in history. Pick it when “what happened during this PR” matters (large features, audit trails).</p>
+      </article>
+      <article class="flow-card">
+        <h3>Landing: squash</h3>
+        <p><code>Squash and merge</code> collapses the PR into one commit on <code>main</code> — the usual default for linear history. Rebase onto latest <code>main</code> first so CI tests the merged result, not a guess.</p>
+      </article>
+      <article class="flow-card">
+        <h3>Landing: rebase &amp; merge</h3>
+        <p><code>Rebase and merge</code> replays every PR commit directly onto <code>main</code>, no merge commit. Clean, but loses PR grouping metadata and needs a conflict-free replay — squash is usually the sharper tool.</p>
+      </article>
+      <article class="flow-card">
+        <h3>Protected branches: no rewrites</h3>
+        <p>Force-push to <code>main</code> is blocked by design on sane remotes — that’s a feature, not friction. Rewrite personal branches; change public history only with team coordination (or a revert, section 10).</p>
+<div class="ex"><code># after merge, sweep up:
+git fetch --prune
+git branch -d feature/x
+git push origin --delete feature/x</code><button class="copy" type="button" data-copy="# after merge, sweep up:&#10;git fetch --prune&#10;git branch -d feature/x&#10;git push origin --delete feature/x">copy</button></div>
+      </article>
+    </div>
+  </div>
+</section>
+<section class="sec light alt" id="rescue">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">10 · Rescue</p>
+      <h2>When Git surprises you</h2>
+      <p class="sec-sub">Twelve scenarios everyone eventually hits. Symptom, cause, fix — and what prevents it next time. None of these mean you “broke Git”; they mean history has edges.</p>
+    </div>
+    <div class="setup-grid reveal">
+      <article class="setup-step"><span class="step-num">1</span><h3>Detached HEAD</h3><p>You checked out a commit or a PR ref, then committed — that work belongs to no branch. Save it in one move, or leave without it.</p><div class="ex"><code>git switch -c keep/my-work
+# leaving without keeping:
+git switch main</code><button class="copy" type="button" data-copy="git switch -c keep/my-work&#10;# leaving without keeping:&#10;git switch main">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">2</span><h3>Commit “lost” to reset or a bad rebase</h3><p>Reflog is a diary of every position HEAD held. Find the entry, then move back to it; ORIG_HEAD is the one-step shortcut.</p><div class="ex"><code>git reflog
+git reset --hard HEAD@{7}
+# right after the scary op:
+git reset --hard ORIG_HEAD</code><button class="copy" type="button" data-copy="git reflog&#10;git reset --hard HEAD@{7}&#10;# right after the scary op:&#10;git reset --hard ORIG_HEAD">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">3</span><h3>Dropped a stash you needed</h3><p>Dropped stashes stay as unreachable commits for ~30 days. Fish them out of the object database.</p><div class="ex"><code>git fsck --unreachable | grep commit
+git stash apply &lt;found-sha&gt;</code><button class="copy" type="button" data-copy="git fsck --unreachable | grep commit&#10;git stash apply &lt;found-sha&gt;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">4</span><h3>Amend a commit already pushed</h3><p>Your branch, your rewrite: fix it locally, publish with a lease. Announce it if anyone else pulled the branch.</p><div class="ex"><code>git commit --amend
+git push --force-with-lease</code><button class="copy" type="button" data-copy="git commit --amend&#10;git push --force-with-lease">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">5</span><h3>Undo a merge that’s already on main</h3><p>Public history: revert, don’t rewrite. -m 1 keeps the mainline parent (the side the merge landed on). Gotcha — re-merging the old branch won’t re-apply until you revert the revert or rebase it fresh.</p><div class="ex"><code>git revert -m 1 &lt;merge-sha&gt;</code><button class="copy" type="button" data-copy="git revert -m 1 &lt;merge-sha&gt;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">6</span><h3>Wrong author email across recent commits</h3><p>Identity comes from the committing machine — set it per scope (section 01). Repair a range by amending author into each replayed commit.</p><div class="ex"><code>git rebase -i &amp;lt;base&amp;gt; \
+  --exec "git commit --amend --reset-author --no-edit"</code><button class="copy" type="button" data-copy="git rebase -i &amp;lt;base&amp;gt; \&#10;  --exec &quot;git commit --amend --reset-author --no-edit&quot;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">7</span><h3>Committed a secret</h3><p>Rotation beats rewriting: revoke the credential everywhere first — forks and caches keep copies. Then scrub before it ever ships (filter-repo / BFG) and force with coordination.</p><div class="ex"><code>git filter-repo --invert-paths \
+  --path secrets.env</code><button class="copy" type="button" data-copy="git filter-repo --invert-paths \&#10;  --path secrets.env">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">8</span><h3>A huge binary snuck into history</h3><p>Track big binaries with LFS before they’re committed. Already committed? size filters rewrite history — same coordination rules as any rewrite.</p><div class="ex"><code>git lfs track "*.psd"   # then commit .gitattributes</code><button class="copy" type="button" data-copy="git lfs track &quot;*.psd&quot;   # then commit .gitattributes">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">9</span><h3>Repository feels corrupted</h3><p>git fsck names the problem; a healthy remote is the fastest repair — re-clone and reapply unpushed work from reflog.</p><div class="ex"><code>git fsck --full
+# then: fresh clone + git format-patch if needed</code><button class="copy" type="button" data-copy="git fsck --full&#10;# then: fresh clone + git format-patch if needed">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">10</span><h3>Cherry-pick a merge commit</h3><p>A merge has two parents — pick must be told which one is the mainline, same rule as revert -m 1.</p><div class="ex"><code>git cherry-pick -m 1 &lt;merge-sha&gt;</code><button class="copy" type="button" data-copy="git cherry-pick -m 1 &lt;merge-sha&gt;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">11</span><h3>Hunt the commit that broke it</h3><p>Bisect binary-searches history; with a test script it runs unattended from bad back to first-bad.</p><div class="ex"><code>git bisect start HEAD v1.2
+git bisect run npm test</code><button class="copy" type="button" data-copy="git bisect start HEAD v1.2&#10;git bisect run npm test">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">12</span><h3>Try a scary rebase without leaving your seat</h3><p>Worktrees are extra checkouts sharing one object store — experiment there, delete when done, main working copy untouched.</p><div class="ex"><code>git worktree add ../try-rebase feature/x</code><button class="copy" type="button" data-copy="git worktree add ../try-rebase feature/x">copy</button></div></article>
+    </div>
+  </div>
+</section>
+
+
 <section class="sec" id="quiz">
   <div class="wrap">
     <div class="sec-head reveal">
-      <p class="kicker">08 · Quiz</p>
+      <p class="kicker">11 · Quiz</p>
       <h2>Check the mental model</h2>
-      <p class="sec-sub">Five questions. No trick flags — just whether the pointers and snapshots make sense.</p>
+      <p class="sec-sub">Eleven questions. No trick flags — just whether the pointers and snapshots make sense.</p>
     </div>
     <div class="quiz-card reveal" id="quizCard">
       <div class="quiz-meta"><span id="quizPos">Question 1 / 5</span><span id="quizScore">Score 0</span></div>
@@ -609,7 +833,7 @@ git rebase --abort</code><button class="copy" type="button" data-copy="git merge
 <section class="sec light" id="cheatsheet">
   <div class="wrap">
     <div class="sec-head reveal">
-      <p class="kicker">09 · Cheat sheet</p>
+      <p class="kicker">12 · Cheat sheet</p>
       <h2>Printable pocket card</h2>
       <p class="sec-sub">The commands you’ll actually reach for. Print this section or save it as PDF.</p>
     </div>
@@ -646,6 +870,29 @@ git rebase --abort</code><button class="copy" type="button" data-copy="git merge
           <li><code>git rebase --abort</code>Bail out of rebase</li>
           <li><code>git reflog</code>Find “lost” commits</li>
         </ul></div>
+        <div class="cheat-col"><h4>Rebase</h4><ul>
+          <li><code>git pull --rebase --autostash</code>Update without merge noise</li>
+          <li><code>git rebase origin/main</code>Replay onto latest main</li>
+          <li><code>git rebase -i origin/main</code>Tidy history interactively</li>
+          <li><code>git rebase --continue</code>Resume after resolving</li>
+          <li><code>git rebase --skip / --abort</code>Drop commit / undo all</li>
+          <li><code>git rebase --onto X Y b</code>Transplant a range</li>
+        </ul></div>
+        <div class="cheat-col"><h4>Publish safely</h4><ul>
+          <li><code>git push --force-with-lease</code>Publish a rewrite (never bare -f)</li>
+          <li><code>git fetch --prune</code>Drop vanished remote branches</li>
+          <li><code>git reset --hard origin/&lt;b&gt;</code>Refresh after a rewrite</li>
+          <li><code>git revert -m 1 &lt;merge&gt;</code>Undo a pushed merge</li>
+        </ul></div>
+        <div class="cheat-col"><h4>Conflicts</h4><ul>
+          <li><code>merge.conflictStyle zdiff3</code>See the base version</li>
+          <li><code>git diff --name-only --diff-filter=U</code>List conflicted files</li>
+          <li><code>git checkout --ours &lt;f&gt;</code>Take your side (merge)</li>
+          <li><code>git checkout --theirs &lt;f&gt;</code>Take incoming / replayed commit</li>
+          <li><code>git mergetool</code>3-way editor per file</li>
+          <li><code>rerere.enabled true</code>Never resolve twice</li>
+        </ul></div>
+
       </div>
     </div>
   </div>
@@ -710,7 +957,16 @@ const GLOSSARY = [
   {t:'force-with-lease', tag:'safety', d:'Force-push that fails if the remote moved since you last fetched.'},
   {t:'merge commit', tag:'object', d:'Commit with two parents, joining histories.'},
   {t:'tag', tag:'object', d:'A (usually immutable) name for a commit — often releases.'},
-  {t:'stash', tag:'workflow', d:'Temporary shelf for dirty working-tree changes.'},
+  {t:'stash', tag:'workflow', d:'Temporary shelf for dirty working-tree changes.'},,
+  {t:'merge base', tag:'workflow', d:'Latest common ancestor of two refs — the “why” behind every conflict.'},
+  {t:'non-fast-forward', tag:'safety', d:'Push rejected because the remote holds commits your history lacks — typical after rebasing.'},
+  {t:'zdiff3', tag:'workflow', d:'Conflict style that also shows the shared base between ||||||| and =======.'},
+  {t:'rerere', tag:'safety', d:'Reused Record Resolution — remembers how you solved a conflict and replays it.'},
+  {t:'autosquash', tag:'workflow', d:'Rebase mode that slots fixup!/squash! commits under their targets.'},
+  {t:'ORIG_HEAD', tag:'safety', d:'Pointer to where HEAD was before the last big move — a one-step undo.'},
+  {t:'mainline parent', tag:'safety', d:'The -m side of a merge commit: the branch it was merged into. Revert and cherry-pick need it.'},
+  {t:'worktree', tag:'workflow', d:'A second checkout sharing one object database — try risky things elsewhere.'},
+  {t:'credential helper', tag:'setup', d:'Storefront between Git and your secrets — manager, gh, or SSH agent. Keeps tokens out of URLs.'}
 ];
 
 const COMMANDS = [
@@ -731,7 +987,13 @@ const COMMANDS = [
   {name:'git reset', tier:'power', desc:'Move a branch pointer and optionally the index/worktree.', ex:'git reset --soft HEAD~1'},
   {name:'git cherry-pick', tier:'power', desc:'Copy a commit onto the current branch.', ex:'git cherry-pick abc1234'},
   {name:'git reflog', tier:'power', desc:'Recover commits after resets or bad checkouts.', ex:'git reflog'},
-  {name:'git bisect', tier:'power', desc:'Binary-search history to find the commit that introduced a bug.', ex:'git bisect start'},
+  {name:'git bisect', tier:'power', desc:'Binary-search history to find the commit that introduced a bug.', ex:'git bisect start'},,
+  {name:'git revert', tier:'weekly', desc:'Undo commits by applying their inverse — safe on shared history.', ex:'git revert -m 1 8f3a21c'},
+  {name:'git config', tier:'weekly', desc:'Scoped settings that decide how every other command behaves.', ex:'git config --global pull.rebase true'},
+  {name:'git mergetool', tier:'power', desc:'Walk conflicted files in a 3-way editor.', ex:'git mergetool'},
+  {name:'git worktree', tier:'power', desc:'Another branch in another folder, same repository.', ex:'git worktree add ../try feature/x'},
+  {name:'git fsck', tier:'power', desc:'Check object integrity; find unreachable commits.', ex:'git fsck --lost-found'},
+  {name:'git lfs', tier:'power', desc:'Store large binaries outside history.', ex:'git lfs track "*.psd"'}
 ];
 
 const QUIZ = [
@@ -739,7 +1001,13 @@ const QUIZ = [
   {q:'Creating a new branch typically…', opts:['Copies every file into a new folder','Creates a tiny ref pointing at a commit','Runs a full backup of the remote','Locks the repository'], a:1, why:'A branch is a pointer (about 41 bytes of hash text).'},
   {q:'git add prepares changes for…', opts:['The remote origin','The next commit via the index/staging area','Immediate push','Deleting the working tree'], a:1, why:'The index is the proposed next snapshot.'},
   {q:'Detached HEAD means…', opts:['Your remote is down','HEAD points directly at a commit, not a branch','Git deleted your branch','You must force-push'], a:1, why:'Fine for inspection; create a branch before making commits you want to keep.'},
-  {q:'The safest common force-push option is…', opts:['--force','--force-with-lease','--hard','--no-verify'], a:1, why:'--force-with-lease refuses to overwrite unexpected remote commits.'},
+  {q:'The safest common force-push option is…', opts:['--force','--force-with-lease','--hard','--no-verify'], a:1, why:'--force-with-lease refuses to overwrite unexpected remote commits.'},,
+  {q:'You hit a conflict mid-rebase. What does --theirs refer to?', opts:['The version from the commit being replayed','Your branch’s current version','The version on origin/main','The merge base'], a:0, why:'Rebase flips ours/theirs — you are building on the base (ours) and replaying your old commits (theirs).'},
+  {q:'After rebasing an already-pushed branch, a plain git push fails because…', opts:['The remote still has the pre-rebase commits — non-fast-forward','You forgot -u','GitHub blocks rebased pushes','CI locks the branch'], a:0, why:'Rewritten SHAs mean the remote tip is no longer an ancestor of yours. Publish with --force-with-lease.'},
+  {q:'What does --force-with-lease actually check?', opts:['That the remote tip equals what you last fetched','That tests passed','That your message is clean','Nothing — it is just a quieter -f'], a:0, why:'If someone pushed since your last fetch, the lease fails and their work is safe.'},
+  {q:'A bad merge is already pushed to main. The safe undo is…', opts:['git revert -m 1 &lt;merge-commit&gt;','git reset --hard then push -f','delete and recreate main','git rebase --onto main'], a:0, why:'Revert adds history instead of rewriting shared history. -m 1 keeps the mainline parent.'},
+  {q:'A long branch re-triggers the same conflict on every rebase. Enable…', opts:['rerere','LFS','bisect','worktree'], a:0, why:'Reused Record Resolution replays your earlier resolution automatically.'},
+  {q:'Your team wants a strictly linear main with exactly one commit per PR. Land it with…', opts:['Squash and merge','Create a merge commit','Rebase and merge','Force-push'], a:0, why:'Squash collapses the PR to one clean commit; merge commits break linearity, rebase-and-merge keeps every (possibly messy) commit.'}
 ];
 
 const TERM_SCENES = [
@@ -772,7 +1040,7 @@ mobileNav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
 }));
 
 /* Active section highlighting */
-const sectionIds = ['setup','usage','internals','glossary','commands','workflows','conflicts','quiz','cheatsheet'];
+const sectionIds = ['setup','usage','internals','glossary','commands','workflows','rebasing','conflicts','pushing','rescue','quiz','cheatsheet'];
 const allNavLinks = [...document.querySelectorAll('.nav-links a, .mobile-nav a')];
 const ioNav = new IntersectionObserver((entries) => {
   entries.forEach(e => {
