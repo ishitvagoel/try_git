@@ -215,4 +215,708 @@ section{scroll-margin-top:calc(var(--nav-h) + 20px)}
 .cmd-card[data-tier="weekly"]{--cc:var(--blue)}
 .cmd-card[data-tier="power"]{--cc:var(--magenta)}
 .cc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.cc-name{font-family:var(--mono);font-size:clamp(18px,2vw,21px);font-weigh
+
+.cc-name{font-family:var(--mono);font-size:clamp(18px,2vw,21px);font-weight:700}
+.cc-tier{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-radius:4px;flex:none}
+.cc-tier.daily{color:var(--green);background:rgba(62,207,110,.12)}
+.cc-tier.weekly{color:var(--blue);background:rgba(88,166,255,.12)}
+.cc-tier.power{color:var(--magenta);background:rgba(198,120,221,.14)}
+.cc-desc{font-size:14px;color:var(--muted);line-height:1.55}
+.cc-ex{margin-top:auto}
+.cmd-empty{font-family:var(--mono);color:var(--muted);font-size:13px;padding:20px 0}
+.flow-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:18px}
+.flow-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.flow-card h3{font-family:var(--disp);font-weight:700;font-size:18px}
+.flow-card p{font-size:14px;color:var(--muted);line-height:1.55}
+.flow-steps{display:flex;flex-direction:column;gap:8px;margin:4px 0}
+.flow-steps li{font-family:var(--mono);font-size:12.5px;color:var(--ink);list-style:none;display:flex;gap:10px;align-items:flex-start}
+.flow-steps li span{color:var(--orange);font-weight:700;flex:none}
+.conflict-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(22px,4vw,48px);align-items:start}
+.conflict-panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.conflict-panel h3{font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:14px 18px;border-bottom:1px solid var(--line);color:var(--muted)}
+.conflict-body{padding:18px;font-family:var(--mono);font-size:12.8px;line-height:1.7}
+.conflict-body .mk{color:var(--red)}.conflict-body .th{color:var(--green)}.conflict-body .base{color:var(--yellow)}
+.conflict-steps{display:flex;flex-direction:column;gap:14px}
+.cstep{background:#fff;border:1px solid var(--line-d);border-radius:8px;padding:16px 18px}
+.light .cstep h4{font-family:var(--disp);font-weight:700;font-size:16px;margin-bottom:6px}
+.light .cstep p{font-size:13.5px;color:var(--muted-d);margin-bottom:10px}
+.quiz-card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:clamp(22px,3vw,34px);max-width:760px}
+.quiz-meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.quiz-q{font-family:var(--disp);font-weight:700;font-size:clamp(1.25rem,2.4vw,1.7rem);line-height:1.25;margin-bottom:18px}
+.quiz-opts{display:flex;flex-direction:column;gap:10px}
+.qopt{text-align:left;border:1px solid var(--line-strong);border-radius:8px;padding:14px 16px;transition:border-color .2s,background .2s,transform .15s}
+.qopt:hover:not(:disabled){border-color:var(--orange);transform:translateX(3px)}
+.qopt.correct{border-color:var(--green);background:rgba(62,207,110,.1)}
+.qopt.wrong{border-color:var(--red);background:rgba(248,81,73,.1)}
+.qopt:disabled{cursor:default}
+.quiz-feedback{margin-top:16px;font-size:14px;color:var(--muted);min-height:1.4em}
+.quiz-feedback.ok{color:var(--green)}.quiz-feedback.bad{color:var(--red)}
+.quiz-nav{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+.cheat{background:#fff;border:1px solid var(--line-d);border-radius:12px;padding:clamp(20px,3vw,36px);color:var(--ink-d)}
+.cheat-top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px;padding-bottom:16px;border-bottom:1px solid var(--line-d)}
+.cheat-top h3{font-family:var(--disp);font-weight:800;font-size:clamp(1.4rem,2.5vw,2rem)}
+.cheat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:18px}
+.cheat-col h4{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--orange-d);margin-bottom:10px}
+.cheat-col ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.cheat-col li{font-size:13px;color:var(--muted-d);line-height:1.45}
+.cheat-col code{display:block;font-size:12.5px;color:var(--ink-d);font-weight:600;margin-bottom:2px}
+.footer{padding:48px 0 64px;border-top:1px solid var(--line);margin-top:20px}
+.footer-in{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.footer p{font-size:13.5px;color:var(--muted);max-width:48ch}
+.footer-links{display:flex;gap:16px;flex-wrap:wrap}
+.footer-links a{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.footer-links a:hover{color:var(--orange)}
+.mobile-nav{display:none;position:fixed;inset:var(--nav-h) 0 0 0;z-index:45;background:rgba(11,14,20,.96);backdrop-filter:blur(12px);padding:24px clamp(18px,4vw,40px);flex-direction:column;gap:8px}
+.mobile-nav.open{display:flex}
+.mobile-nav a{font-family:var(--mono);font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:14px 0;border-bottom:1px solid var(--line)}
+.mobile-nav a:hover,.mobile-nav a.active{color:var(--orange)}
+@media (max-width:980px){
+  .hero-grid,.usage-grid,.conflict-grid{grid-template-columns:1fr}
+  .flags{position:static}
+  .pipeline{flex-wrap:wrap}
+  .arrow{transform:rotate(90deg);padding:6px 0}
+  .law{grid-template-columns:80px 1fr;gap:14px}
+  .zoo-row{grid-template-columns:90px 1fr}
+}
+@media (max-width:760px){
+  .nav-links{display:none}
+  .burger{display:flex}
+  .setup-grid{grid-template-columns:1fr}
+  .uro{grid-template-columns:28px minmax(100px,1fr) 44px;gap:8px}
+  .uro .bar,.uro .ttag{display:none}
+  .cta-row .btn{width:100%;text-align:center}
+}
+@media print{
+  .progress,.nav,.burger,.mobile-nav,.cta-row,.hero-chips,.terminal,.branchline,.quiz-card,.btn,.copy{display:none!important}
+  body{background:#fff;color:#111}
+  .sec,.hero,.light{background:#fff!important;background-image:none!important;padding:12px 0}
+  .cheat{border:none;padding:0}
+}
+
+</style>
+</head>
+
+<body>
+<div class="progress" aria-hidden="true"><span id="prog"></span></div>
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="logo" href="#top" aria-label="git, decoded home">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#0b0e14"/><path d="M8 24V13c0-3 2-5 5-5h6" stroke="#f0512f" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="8" cy="26" r="3.4" fill="#f0512f"/><circle cx="22" cy="8" r="3.4" fill="#58a6ff"/></svg>
+      git<span class="logo-comma">,</span> decoded
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#setup">Setup</a>
+      <a href="#usage">Usage</a>
+      <a href="#internals">Internals</a>
+      <a href="#glossary">Glossary</a>
+      <a href="#commands">Commands</a>
+      <a href="#workflows">Workflows</a>
+      <a href="#conflicts" class="nav-danger">Conflicts</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#cheatsheet">Cheat sheet</a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav"><span></span><span></span><span></span></button>
+  </div>
+</header>
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile">
+  <a href="#setup">Setup</a>
+  <a href="#usage">Usage</a>
+  <a href="#internals">Internals</a>
+  <a href="#glossary">Glossary</a>
+  <a href="#commands">Commands</a>
+  <a href="#workflows">Workflows</a>
+  <a href="#conflicts">Conflicts</a>
+  <a href="#quiz">Quiz</a>
+  <a href="#cheatsheet">Cheat sheet</a>
+</nav>
+
+<main id="top">
+<section class="hero">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="wrap hero-grid">
+    <div>
+      <p class="kicker">Mental models &gt; memorizing flags</p>
+      <h1>git<span class="hl">,</span><br>decoded</h1>
+      <p class="lede">How Git actually works — ranked by what developers really type. Snapshots, pointers, and the commands you’ll use every day.</p>
+      <div class="cta-row">
+        <a class="btn primary" href="#setup">Start with setup</a>
+        <a class="btn ghost" href="#commands">Jump to commands</a>
+      </div>
+      <ul class="hero-chips">
+        <li><span class="dot do"></span>usage-ranked</li>
+        <li><span class="dot db"></span>internals</li>
+        <li><span class="dot dg"></span>conflict rescue</li>
+        <li><span class="dot dy"></span>printable sheet</li>
+      </ul>
+    </div>
+    <div class="terminal" aria-label="Animated terminal demo">
+      <div class="term-bar"><span class="td r"></span><span class="td y"></span><span class="td g"></span><span class="term-title">~/project — zsh</span></div>
+      <div class="term-body" id="termBody"></div>
+    </div>
+  </div>
+  <div class="wrap">
+    <svg class="branchline reveal" viewBox="0 0 1100 120" fill="none" aria-hidden="true">
+      <path class="bl-main" d="M40 60 H1060"/>
+      <path class="bl-branch" d="M420 60 C480 60 500 20 560 20 H760"/>
+      <circle class="bl-dot do" style="--dd:.9s" cx="120" cy="60" r="7"/>
+      <circle class="bl-dot db" style="--dd:1.05s" cx="280" cy="60" r="7"/>
+      <circle class="bl-dot do" style="--dd:1.2s" cx="420" cy="60" r="7"/>
+      <circle class="bl-dot do" style="--dd:1.35s" cx="560" cy="20" r="7"/>
+      <circle class="bl-dot db" style="--dd:1.5s" cx="760" cy="20" r="7"/>
+      <circle class="bl-dot do" style="--dd:1.65s" cx="900" cy="60" r="7"/>
+    </svg>
+  </div>
+</section>
+
+<section class="sec light" id="setup">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">01 · Setup</p>
+      <h2>Get Git ready in four moves</h2>
+      <p class="sec-sub">Install once, configure your identity, and you’ll never wonder why commits say “unknown” again.</p>
+    </div>
+    <div class="setup-grid reveal">
+      <article class="setup-step"><span class="step-num">1</span><h3>Install</h3><p>macOS: <code>brew install git</code> · Windows: Git for Windows · Linux: <code>sudo apt install git</code></p><div class="ex"><code>git --version</code><button class="copy" type="button" data-copy="git --version">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">2</span><h3>Who you are</h3><p>Every commit stores author name + email. Set them globally once.</p><div class="ex"><code>git config --global user.name "Ada Lovelace"
+git config --global user.email "ada@example.com"</code><button class="copy" type="button" data-copy="git config --global user.name &quot;Ada Lovelace&quot;&#10;git config --global user.email &quot;ada@example.com&quot;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">3</span><h3>Sensible defaults</h3><p>Default branch name, better diffs, and a readable log alias.</p><div class="ex"><code>git config --global init.defaultBranch main
+git config --global pull.rebase false
+git config --global alias.lg "log --oneline --graph --decorate -20"</code><button class="copy" type="button" data-copy="git config --global init.defaultBranch main&#10;git config --global pull.rebase false&#10;git config --global alias.lg &quot;log --oneline --graph --decorate -20&quot;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">4</span><h3>First repo</h3><p>Turn any folder into a repository, or clone an existing one.</p><div class="ex"><code>git init
+# or
+git clone https://github.com/org/repo.git</code><button class="copy" type="button" data-copy="git init">copy</button></div></article>
+    </div>
+    <p class="setup-verify reveal">Verify: <code>git config --list --show-origin | head</code> — you should see your name, email, and defaults.</p>
+  </div>
+</section>
+
+<section class="sec" id="usage">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">02 · Real usage</p>
+      <h2>What people actually type</h2>
+      <p class="sec-sub">Relative frequencies from public command telemetry and surveys — not a syllabus. Learn the top of the list first.</p>
+    </div>
+    <div class="usage-grid">
+      <div class="bars reveal" id="usageBars"></div>
+      <aside class="flags reveal">
+        <h3>Flags worth knowing</h3>
+        <p>A few options do most of the work in daily Git.</p>
+        <div class="flag-list">
+          <div class="flag"><code>--oneline</code><span>Compact history — one commit per line</span></div>
+          <div class="flag"><code>-a</code><span><em>commit -a</em> stages tracked edits then commits</span></div>
+          <div class="flag"><code>-m</code><span>Inline commit message (skip the editor)</span></div>
+          <div class="flag"><code>-u</code><span><em>push -u</em> sets upstream tracking once</span></div>
+          <div class="flag"><code>--amend</code><span>Rewrite the tip commit (local only)</span></div>
+          <div class="flag"><code>--force-with-lease</code><span>Safer force-push than <em>--force</em></span></div>
+        </div>
+        <p class="src-note">Illustrative ranks for learning priority — your team’s mix will differ.</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="sec light alt" id="internals">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">03 · Internals</p>
+      <h2>Three areas, three object types</h2>
+      <p class="sec-sub">Git is a content-addressed snapshot store with movable labels. Once that clicks, every command is just moving data or pointers.</p>
+    </div>
+
+    <div class="pipeline reveal" id="pipeline" role="tablist" aria-label="Git areas"></div>
+    <div class="stage-detail reveal" id="stageDetail"></div>
+
+    <div class="laws reveal">
+      <div class="law"><div class="law-num">01</div><div><h3>Commits are snapshots, not diffs</h3><p>Each commit points at a full tree of your project. Unchanged files reuse the same blob hashes — that’s why snapshots stay cheap.</p></div></div>
+      <div class="law"><div class="law-num">02</div><div><h3>A branch is a 41-byte pointer</h3><p>Creating <code>feature</code> writes a tiny file containing a commit hash. Branching is fast because nothing is copied.</p></div></div>
+      <div class="law"><div class="law-num">03</div><div><h3>HEAD says where you are</h3><p><code>HEAD</code> usually points at a branch name. Detached HEAD means it points straight at a commit — fine for looking, risky for new work.</p></div></div>
+    </div>
+
+    <div class="zoo reveal">
+      <div class="zoo-row" style="--zc:var(--orange-d)"><div class="z-label">blob</div><p>Raw file bytes. No filename. Same content → same hash everywhere.</p></div>
+      <div class="zoo-row" style="--zc:#2b6cb0"><div class="z-label">tree</div><p>Directory listing: names → blob/tree hashes. Rebuilds the filesystem shape.</p></div>
+      <div class="zoo-row" style="--zc:#237a45"><div class="z-label">commit</div><p>Metadata + pointer to a root tree + parent commit(s). History is a DAG.</p></div>
+      <div class="zoo-row" style="--zc:#a03028"><div class="z-label">ref</div><p>Human name for a hash: branches, tags, remotes. Labels you move around.</p></div>
+    </div>
+    <p class="zoo-note reveal">Pro tip: <code>git cat-file -t &lt;hash&gt;</code> and <code>git cat-file -p &lt;hash&gt;</code> peek under the hood.</p>
+
+    <div class="objwrap reveal">
+      <svg class="objfig" viewBox="0 0 760 280" aria-label="Commit pointing to tree pointing to blobs">
+        <path class="of-line" d="M120 80 H280"/>
+        <path class="of-line" d="M380 80 H520"/>
+        <path class="of-branch" d="M520 80 C560 80 580 140 620 140"/>
+        <path class="of-branch" d="M520 80 C560 80 580 220 620 220"/>
+        <circle class="of-dot dm" style="--dd:.4s" cx="80" cy="80" r="10"/>
+        <circle class="of-dot dmo" style="--dd:.7s" cx="330" cy="80" r="10"/>
+        <circle class="of-dot dm" style="--dd:1s" cx="660" cy="140" r="8"/>
+        <circle class="of-dot dm" style="--dd:1.15s" cx="660" cy="220" r="8"/>
+        <text class="of-lb" x="80" y="55" text-anchor="middle">commit</text>
+        <text class="of-lb lo" x="330" y="55" text-anchor="middle">tree</text>
+        <text class="of-lb" x="660" y="120" text-anchor="middle">blob</text>
+        <text class="of-lb" x="660" y="200" text-anchor="middle">blob</text>
+        <text class="of-t" x="200" y="70">tree hash</text>
+        <text class="of-t" x="450" y="70">entries</text>
+        <text class="of-lb lh" x="80" y="115" text-anchor="middle">parents · author · msg</text>
+      </svg>
+      <p class="fig-cap">A commit names a tree; the tree names blobs (and nested trees). Filenames live in trees — not inside blobs.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec light" id="glossary">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">04 · Glossary</p>
+      <h2>Words Git people throw around</h2>
+      <p class="sec-sub">Search the vocabulary of everyday collaboration — staging, upstream, rebase, and friends.</p>
+    </div>
+    <div class="gloss-tools reveal">
+      <span class="prompt-label">$</span>
+      <input id="glossQ" type="search" placeholder="filter terms…" aria-label="Filter glossary" autocomplete="off">
+      <span class="gcount" id="glossCount"></span>
+    </div>
+    <div class="g-grid reveal" id="glossGrid"></div>
+    <p class="g-empty hide" id="glossEmpty">No terms match that filter.</p>
+  </div>
+</section>
+
+<section class="sec" id="commands">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">05 · Command reference</p>
+      <h2>Commands by how often you’ll need them</h2>
+      <p class="sec-sub">Daily muscle memory first, then weekly teamwork, then power tools you reach for when something’s weird.</p>
+    </div>
+    <div class="cmd-tools reveal">
+      <div class="tabs" role="tablist" aria-label="Command tiers">
+        <button class="tab active" data-tier="all" type="button">All</button>
+        <button class="tab" data-tier="daily" type="button">Daily</button>
+        <button class="tab" data-tier="weekly" type="button">Weekly</button>
+        <button class="tab" data-tier="power" type="button">Power</button>
+      </div>
+      <div class="cmd-search">
+        <label for="cmdQ">grep</label>
+        <input id="cmdQ" type="search" placeholder="status, rebase…" aria-label="Search commands" autocomplete="off">
+      </div>
+    </div>
+    <div class="cmd-grid reveal" id="cmdGrid"></div>
+    <p class="cmd-empty hide" id="cmdEmpty">No commands match.</p>
+  </div>
+</section>
+
+<section class="sec" id="workflows">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">06 · Workflows</p>
+      <h2>Repeatable paths for real teams</h2>
+      <p class="sec-sub">Same verbs, different choreography — pick the shape that matches how your team ships.</p>
+    </div>
+    <div class="flow-grid reveal">
+      <article class="flow-card">
+        <h3>Feature branch + PR</h3>
+        <p>Isolate work, open a reviewable change, merge when green.</p>
+        <ol class="flow-steps">
+          <li><span>1</span><code>git switch -c feature/x</code></li>
+          <li><span>2</span>commit small, purposeful slices</li>
+          <li><span>3</span><code>git push -u origin HEAD</code></li>
+          <li><span>4</span>open PR → review → merge</li>
+        </ol>
+        <div class="ex"><code>git switch main && git pull
+git switch -c feature/login
+git add -p && git commit
+git push -u origin HEAD</code><button class="copy" type="button" data-copy="git switch main && git pull&#10;git switch -c feature/login&#10;git add -p && git commit&#10;git push -u origin HEAD">copy</button></div>
+      </article>
+      <article class="flow-card">
+        <h3>Hotfix on main</h3>
+        <p>Tiny, urgent patch with a clear message and fast follow-up.</p>
+        <ol class="flow-steps">
+          <li><span>1</span>branch from the broken release</li>
+          <li><span>2</span>one focused commit</li>
+          <li><span>3</span>ship, then back-port if needed</li>
+        </ol>
+        <div class="ex"><code>git switch -c hotfix/null-check
+# fix, test
+git commit -am "fix: guard null user id"
+git push -u origin HEAD</code><button class="copy" type="button" data-copy="git switch -c hotfix/null-check&#10;git commit -am &quot;fix: guard null user id&quot;&#10;git push -u origin HEAD">copy</button></div>
+      </article>
+      <article class="flow-card">
+        <h3>Update your branch</h3>
+        <p>Bring <code>main</code> into your feature without surprise history rewrites on shared branches.</p>
+        <ol class="flow-steps">
+          <li><span>1</span><code>git fetch origin</code></li>
+          <li><span>2</span>merge or rebase onto latest main</li>
+          <li><span>3</span>resolve, test, push</li>
+        </ol>
+        <div class="ex"><code>git fetch origin
+git rebase origin/main
+# or: git merge origin/main</code><button class="copy" type="button" data-copy="git fetch origin&#10;git rebase origin/main">copy</button></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="sec light" id="conflicts">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker kr">07 · Conflicts</p>
+      <h2>When Git can’t decide for you</h2>
+      <p class="sec-sub">A conflict means two edits touched the same lines. You choose the final truth, then tell Git you’re done.</p>
+    </div>
+    <div class="conflict-grid">
+      <div class="conflict-panel reveal">
+        <h3>markers in the file</h3>
+        <div class="conflict-body"><span class="mk">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+your version on the current branch
+<span class="base">=======</span>
+incoming version from the other side
+<span class="th">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/login</span></div>
+      </div>
+      <div class="conflict-steps reveal">
+        <div class="cstep"><h4>1. See what’s conflicted</h4><p>List unmerged paths and open them.</p><div class="ex"><code>git status
+git diff</code><button class="copy" type="button" data-copy="git status">copy</button></div></div>
+        <div class="cstep"><h4>2. Edit out the markers</h4><p>Keep the correct code. Delete <code>&lt;&lt;&lt;</code> / <code>===</code> / <code>&gt;&gt;&gt;</code> lines.</p></div>
+        <div class="cstep"><h4>3. Mark resolved &amp; continue</h4><p>Stage the file, then continue the merge or rebase.</p><div class="ex"><code>git add path/to/file
+git merge --continue
+# or: git rebase --continue</code><button class="copy" type="button" data-copy="git add path/to/file&#10;git merge --continue">copy</button></div></div>
+        <div class="cstep"><h4>Abort if needed</h4><p>Bail out cleanly when the merge isn’t worth finishing yet.</p><div class="ex"><code>git merge --abort
+git rebase --abort</code><button class="copy" type="button" data-copy="git merge --abort">copy</button></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="quiz">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">08 · Quiz</p>
+      <h2>Check the mental model</h2>
+      <p class="sec-sub">Five questions. No trick flags — just whether the pointers and snapshots make sense.</p>
+    </div>
+    <div class="quiz-card reveal" id="quizCard">
+      <div class="quiz-meta"><span id="quizPos">Question 1 / 5</span><span id="quizScore">Score 0</span></div>
+      <div class="quiz-q" id="quizQ"></div>
+      <div class="quiz-opts" id="quizOpts"></div>
+      <p class="quiz-feedback" id="quizFeedback"></p>
+      <div class="quiz-nav">
+        <button class="btn primary" id="quizNext" type="button" disabled>Next</button>
+        <button class="btn ghost" id="quizRestart" type="button">Restart</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec light" id="cheatsheet">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">09 · Cheat sheet</p>
+      <h2>Printable pocket card</h2>
+      <p class="sec-sub">The commands you’ll actually reach for. Print this section or save it as PDF.</p>
+    </div>
+    <div class="cheat reveal">
+      <div class="cheat-top">
+        <h3>git, decoded — cheat sheet</h3>
+        <button class="btn primary" type="button" onclick="window.print()">Print</button>
+      </div>
+      <div class="cheat-grid">
+        <div class="cheat-col"><h4>Daily</h4><ul>
+          <li><code>git status</code>What’s changed?</li>
+          <li><code>git add -p</code>Stage hunks interactively</li>
+          <li><code>git commit -m "…"</code>Record a snapshot</li>
+          <li><code>git diff</code>Unstaged changes</li>
+          <li><code>git diff --staged</code>What will commit</li>
+          <li><code>git switch &lt;b&gt;</code>Move HEAD to branch</li>
+        </ul></div>
+        <div class="cheat-col"><h4>Sync</h4><ul>
+          <li><code>git fetch</code>Download refs only</li>
+          <li><code>git pull</code>Fetch + integrate</li>
+          <li><code>git push -u origin HEAD</code>Publish + track</li>
+          <li><code>git clone &lt;url&gt;</code>Copy a remote repo</li>
+        </ul></div>
+        <div class="cheat-col"><h4>History</h4><ul>
+          <li><code>git log --oneline --graph</code>Pretty history</li>
+          <li><code>git blame &lt;file&gt;</code>Who last touched a line</li>
+          <li><code>git show &lt;rev&gt;</code>Inspect one commit</li>
+          <li><code>git stash -u</code>Shelve dirty work</li>
+        </ul></div>
+        <div class="cheat-col"><h4>Repair</h4><ul>
+          <li><code>git restore &lt;f&gt;</code>Discard worktree edits</li>
+          <li><code>git restore --staged &lt;f&gt;</code>Unstage</li>
+          <li><code>git reset --soft HEAD~1</code>Undo commit, keep changes</li>
+          <li><code>git rebase --abort</code>Bail out of rebase</li>
+          <li><code>git reflog</code>Find “lost” commits</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-in">
+    <div>
+      <a class="logo" href="#top">git<span class="logo-comma">,</span> decoded</a>
+      <p style="margin-top:12px">Built for developers who want the model, not a wall of man pages. Snapshots · pointers · practice.</p>
+    </div>
+    <div class="footer-links">
+      <a href="#commands">Commands</a>
+      <a href="#internals">Internals</a>
+      <a href="#cheatsheet">Cheat sheet</a>
+      <a href="#quiz">Quiz</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.documentElement.classList.add('js');
+
+const USAGE = [
+  {cmd:'git status', pct:98, tier:'daily', w:'98%'},
+  {cmd:'git add', pct:96, tier:'daily', w:'96%'},
+  {cmd:'git commit', pct:95, tier:'daily', w:'95%'},
+  {cmd:'git push', pct:90, tier:'daily', w:'90%'},
+  {cmd:'git pull', pct:88, tier:'daily', w:'88%'},
+  {cmd:'git checkout / switch', pct:82, tier:'daily', w:'82%'},
+  {cmd:'git branch', pct:74, tier:'weekly', w:'74%'},
+  {cmd:'git log', pct:70, tier:'weekly', w:'70%'},
+  {cmd:'git diff', pct:68, tier:'daily', w:'68%'},
+  {cmd:'git merge', pct:55, tier:'weekly', w:'55%'},
+  {cmd:'git stash', pct:48, tier:'weekly', w:'48%'},
+  {cmd:'git rebase', pct:36, tier:'power', w:'36%'},
+  {cmd:'git reset', pct:32, tier:'power', w:'32%'},
+  {cmd:'git cherry-pick', pct:22, tier:'power', w:'22%'},
+  {cmd:'git reflog', pct:18, tier:'power', w:'18%'},
+];
+
+const STAGES = [
+  {name:'Working tree', sub:'your files', detail:'Edits live here as normal files. Git has not recorded them yet.', code:'git status · git diff'},
+  {name:'Staging (index)', sub:'next snapshot', detail:'You choose what belongs in the next commit. Partial staging keeps history clean.', code:'git add · git add -p · git restore --staged'},
+  {name:'Repository', sub:'object database', detail:'Commits, trees, and blobs under .git. Branches are labels pointing at commits.', code:'git commit · git log · git cat-file'},
+];
+
+const GLOSSARY = [
+  {t:'HEAD', tag:'core', d:'Pointer to where you are — usually the current branch tip.'},
+  {t:'branch', tag:'core', d:'A movable name for a commit. Creating one is cheap.'},
+  {t:'commit', tag:'object', d:'A snapshot: metadata + root tree + parent(s).'},
+  {t:'tree', tag:'object', d:'Directory map from names to blob/tree hashes.'},
+  {t:'blob', tag:'object', d:'File contents only — no path, no mode metadata beyond the tree entry.'},
+  {t:'index / staging', tag:'workflow', d:'Proposed next commit. Built with git add.'},
+  {t:'remote', tag:'workflow', d:'A named URL to another repository, often origin.'},
+  {t:'upstream', tag:'workflow', d:'The remote branch your local branch tracks for pull/push.'},
+  {t:'fast-forward', tag:'workflow', d:'Merge that only moves a pointer — no divergent commits.'},
+  {t:'rebase', tag:'workflow', d:'Replay commits onto a new base, rewriting their hashes.'},
+  {t:'detached HEAD', tag:'safety', d:'HEAD points at a commit, not a branch. New commits can look “lost”.'},
+  {t:'reflog', tag:'safety', d:'Local diary of where HEAD and branches have been — undo safety net.'},
+  {t:'force-with-lease', tag:'safety', d:'Force-push that fails if the remote moved since you last fetched.'},
+  {t:'merge commit', tag:'object', d:'Commit with two parents, joining histories.'},
+  {t:'tag', tag:'object', d:'A (usually immutable) name for a commit — often releases.'},
+  {t:'stash', tag:'workflow', d:'Temporary shelf for dirty working-tree changes.'},
+];
+
+const COMMANDS = [
+  {name:'git status', tier:'daily', desc:'Show staged, unstaged, and untracked paths.', ex:'git status -sb'},
+  {name:'git add', tier:'daily', desc:'Copy working-tree changes into the index.', ex:'git add -p'},
+  {name:'git commit', tier:'daily', desc:'Create a new commit from the index.', ex:'git commit -m "explain why"'},
+  {name:'git push', tier:'daily', desc:'Send commits to a remote and update its refs.', ex:'git push -u origin HEAD'},
+  {name:'git pull', tier:'daily', desc:'Fetch then integrate remote changes into your branch.', ex:'git pull --ff-only'},
+  {name:'git switch', tier:'daily', desc:'Move HEAD to another branch (or create with -c).', ex:'git switch -c feature/x'},
+  {name:'git diff', tier:'daily', desc:'Show patches between trees, index, and worktree.', ex:'git diff --staged'},
+  {name:'git log', tier:'weekly', desc:'Walk commit history with optional graph decoration.', ex:'git log --oneline --graph -20'},
+  {name:'git branch', tier:'weekly', desc:'List, create, or delete branch refs.', ex:'git branch -vv'},
+  {name:'git merge', tier:'weekly', desc:'Join another branch into the current one.', ex:'git merge origin/main'},
+  {name:'git fetch', tier:'weekly', desc:'Download remote objects/refs without merging.', ex:'git fetch --prune'},
+  {name:'git stash', tier:'weekly', desc:'Shelve dirty state to work on something else.', ex:'git stash -u'},
+  {name:'git restore', tier:'weekly', desc:'Restore files in worktree or index from a known tree.', ex:'git restore --staged app.js'},
+  {name:'git rebase', tier:'power', desc:'Reapply commits onto an updated base for linear history.', ex:'git rebase -i origin/main'},
+  {name:'git reset', tier:'power', desc:'Move a branch pointer and optionally the index/worktree.', ex:'git reset --soft HEAD~1'},
+  {name:'git cherry-pick', tier:'power', desc:'Copy a commit onto the current branch.', ex:'git cherry-pick abc1234'},
+  {name:'git reflog', tier:'power', desc:'Recover commits after resets or bad checkouts.', ex:'git reflog'},
+  {name:'git bisect', tier:'power', desc:'Binary-search history to find the commit that introduced a bug.', ex:'git bisect start'},
+];
+
+const QUIZ = [
+  {q:'What does a Git commit store primarily?', opts:['A diff against the previous commit','A snapshot pointer to a tree of the project','Only changed filenames','The entire .git folder duplicated'], a:1, why:'Commits point at trees (snapshots). Unchanged content is reused via identical hashes.'},
+  {q:'Creating a new branch typically…', opts:['Copies every file into a new folder','Creates a tiny ref pointing at a commit','Runs a full backup of the remote','Locks the repository'], a:1, why:'A branch is a pointer (about 41 bytes of hash text).'},
+  {q:'git add prepares changes for…', opts:['The remote origin','The next commit via the index/staging area','Immediate push','Deleting the working tree'], a:1, why:'The index is the proposed next snapshot.'},
+  {q:'Detached HEAD means…', opts:['Your remote is down','HEAD points directly at a commit, not a branch','Git deleted your branch','You must force-push'], a:1, why:'Fine for inspection; create a branch before making commits you want to keep.'},
+  {q:'The safest common force-push option is…', opts:['--force','--force-with-lease','--hard','--no-verify'], a:1, why:'--force-with-lease refuses to overwrite unexpected remote commits.'},
+];
+
+const TERM_SCENES = [
+  [{cls:'', html:'<span class="p">➜</span> git status'}, {cls:'dim', html:'On branch main'}, {cls:'g', html:'nothing to commit, working tree clean'}],
+  [{cls:'', html:'<span class="p">➜</span> git switch -c feature/pay'}, {cls:'c', html:"Switched to a new branch 'feature/pay'"}],
+  [{cls:'', html:'<span class="p">➜</span> git add -p && git commit -m "feat: checkout"'}, {cls:'g', html:'[feature/pay 8f3a21c] feat: checkout'}],
+  [{cls:'', html:'<span class="p">➜</span> git lg'}, {cls:'', html:'*<span class="y"> 8f3a21c</span> <span class="b">(HEAD → feature/pay)</span> feat: checkout'}, {cls:'', html:'*<span class="y"> 1a9c002</span> <span class="b">(main)</span> init'}],
+];
+
+/* Progress + nav */
+const prog = document.getElementById('prog');
+const nav = document.getElementById('nav');
+const burger = document.getElementById('burger');
+const mobileNav = document.getElementById('mobileNav');
+function onScroll(){
+  const max = document.documentElement.scrollHeight - innerHeight;
+  prog.style.width = (max > 0 ? (scrollY / max) * 100 : 0) + '%';
+  nav.classList.toggle('scrolled', scrollY > 8);
+}
+addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+burger.addEventListener('click', () => {
+  const open = burger.getAttribute('aria-expanded') === 'true';
+  burger.setAttribute('aria-expanded', String(!open));
+  mobileNav.classList.toggle('open', !open);
+});
+mobileNav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+  burger.setAttribute('aria-expanded', 'false');
+  mobileNav.classList.remove('open');
+}));
+
+/* Active section highlighting */
+const sectionIds = ['setup','usage','internals','glossary','commands','workflows','conflicts','quiz','cheatsheet'];
+const allNavLinks = [...document.querySelectorAll('.nav-links a, .mobile-nav a')];
+const ioNav = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    allNavLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+  });
+}, {rootMargin:'-40% 0px -50% 0px', threshold:0});
+sectionIds.forEach(id => { const el = document.getElementById(id); if (el) ioNav.observe(el); });
+
+/* Reveal */
+const ioReveal = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); ioReveal.unobserve(e.target); } });
+}, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+document.querySelectorAll('.reveal').forEach(el => ioReveal.observe(el));
+
+/* Copy buttons */
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('.copy');
+  if (!btn) return;
+  const text = btn.getAttribute('data-copy') || '';
+  try { await navigator.clipboard.writeText(text); } catch {
+    const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  btn.classList.add('done'); btn.textContent = 'copied';
+  setTimeout(() => { btn.classList.remove('done'); btn.textContent = 'copy'; }, 1200);
+});
+
+/* Usage bars */
+const bars = document.getElementById('usageBars');
+bars.innerHTML = USAGE.map((u,i) => {
+  const tier = u.tier === 'daily' ? 't-daily' : u.tier === 'weekly' ? 't-weekly' : 't-setup';
+  const color = u.tier === 'daily' ? 'var(--green)' : u.tier === 'weekly' ? 'var(--blue)' : 'var(--magenta)';
+  return `<div class="uro reveal" style="--d:${i*0.05}s"><span class="rank">${String(i+1).padStart(2,'0')}</span><code>${u.cmd}</code><div class="bar"><i style="--w:${u.w};--tc:${color}"></i></div><span class="pct">${u.pct}%</span><span class="ttag ${tier}">${u.tier}</span></div>`;
+}).join('');
+bars.querySelectorAll('.uro').forEach(el => ioReveal.observe(el));
+
+/* Pipeline */
+const pipeline = document.getElementById('pipeline');
+const stageDetail = document.getElementById('stageDetail');
+function renderStage(i){
+  pipeline.innerHTML = STAGES.map((s,idx) => {
+    const arrow = idx < STAGES.length - 1 ? `<div class="arrow" aria-hidden="true"><span class="f">add →</span><span class="b">← restore</span></div>` : '';
+    return `<button class="stage${idx===i?' active':''}" type="button" role="tab" aria-selected="${idx===i}" data-i="${idx}"><span class="s-dot"></span><span class="s-name">${s.name}</span><span class="s-sub">${s.sub}</span></button>${arrow}`;
+  }).join('');
+  const s = STAGES[i];
+  stageDetail.innerHTML = `<h4>${s.name}</h4><p>${s.detail}</p><code>${s.code}</code>`;
+  pipeline.querySelectorAll('.stage').forEach(btn => btn.addEventListener('click', () => renderStage(+btn.dataset.i)));
+}
+renderStage(0);
+
+/* Glossary */
+const glossGrid = document.getElementById('glossGrid');
+const glossQ = document.getElementById('glossQ');
+const glossCount = document.getElementById('glossCount');
+const glossEmpty = document.getElementById('glossEmpty');
+function renderGloss(){
+  const q = glossQ.value.trim().toLowerCase();
+  const items = GLOSSARY.filter(g => !q || g.t.toLowerCase().includes(q) || g.d.toLowerCase().includes(q) || g.tag.includes(q));
+  glossCount.textContent = items.length + ' terms';
+  glossEmpty.classList.toggle('hide', items.length > 0);
+  glossGrid.innerHTML = items.map(g => `<article class="g-card"><div class="g-top"><h4>${g.t}</h4><span class="g-tag ${g.tag}">${g.tag}</span></div><p>${g.d}</p></article>`).join('');
+}
+glossQ.addEventListener('input', renderGloss); renderGloss();
+
+/* Commands */
+const cmdGrid = document.getElementById('cmdGrid');
+const cmdQ = document.getElementById('cmdQ');
+const cmdEmpty = document.getElementById('cmdEmpty');
+let cmdTier = 'all';
+document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  cmdTier = tab.dataset.tier;
+  renderCmds();
+}));
+function renderCmds(){
+  const q = cmdQ.value.trim().toLowerCase();
+  const items = COMMANDS.filter(c => (cmdTier === 'all' || c.tier === cmdTier) && (!q || c.name.includes(q) || c.desc.toLowerCase().includes(q)));
+  cmdEmpty.classList.toggle('hide', items.length > 0);
+  cmdGrid.innerHTML = items.map(c => `<article class="cmd-card" data-tier="${c.tier}"><div class="cc-top"><div class="cc-name">${c.name}</div><span class="cc-tier ${c.tier}">${c.tier}</span></div><p class="cc-desc">${c.desc}</p><div class="ex cc-ex"><code>${c.ex}</code><button class="copy" type="button" data-copy="${c.ex.replace(/"/g,'&quot;')}">copy</button></div></article>`).join('');
+}
+cmdQ.addEventListener('input', renderCmds); renderCmds();
+
+/* Quiz */
+let qi = 0, score = 0, answered = false;
+const quizQ = document.getElementById('quizQ');
+const quizOpts = document.getElementById('quizOpts');
+const quizPos = document.getElementById('quizPos');
+const quizScore = document.getElementById('quizScore');
+const quizFeedback = document.getElementById('quizFeedback');
+const quizNext = document.getElementById('quizNext');
+const quizRestart = document.getElementById('quizRestart');
+function showQuiz(){
+  answered = false;
+  quizNext.disabled = true;
+  quizFeedback.textContent = '';
+  quizFeedback.className = 'quiz-feedback';
+  const item = QUIZ[qi];
+  quizPos.textContent = `Question ${qi+1} / ${QUIZ.length}`;
+  quizScore.textContent = `Score ${score}`;
+  quizQ.textContent = item.q;
+  quizOpts.innerHTML = item.opts.map((o,idx) => `<button class="qopt" type="button" data-i="${idx}">${o}</button>`).join('');
+  quizOpts.querySelectorAll('.qopt').forEach(btn => btn.addEventListener('click', () => {
+    if (answered) return;
+    answered = true;
+    const choice = +btn.dataset.i;
+    quizOpts.querySelectorAll('.qopt').forEach((b,idx) => {
+      b.disabled = true;
+      if (idx === item.a) b.classList.add('correct');
+      else if (idx === choice) b.classList.add('wrong');
+    });
+    if (choice === item.a) { score++; quizFeedback.textContent = 'Correct. ' + item.why; quizFeedback.classList.add('ok'); }
+    else { quizFeedback.textContent = 'Not quite. ' + item.why; quizFeedback.classList.add('bad'); }
+    quizScore.textContent = `Score ${score}`;
+    quizNext.disabled = false;
+    quizNext.textContent = qi === QUIZ.length - 1 ? 'See results' : 'Next';
+  }));
+}
+quizNext.addEventListener('click', () => {
+  if (qi >= QUIZ.length - 1) {
+    quizQ.textContent = `Done — ${score} / ${QUIZ.length}`;
+    quizOpts.innerHTML = '';
+    quizFeedback.className = 'quiz-feedback ok';
+    quizFeedback.textContent = score === QUIZ.length ? 'Pointers and snapshots: locked in.' : 'Skim Internals once more, then retry the misses.';
+    quizNext.disabled = true;
+    return;
+  }
+  qi++; showQuiz();
+});
+quizRestart.addEventListener('click', () => { qi = 0; score = 0; showQuiz(); });
+showQuiz();
+
+/* Terminal animation */
+const termBody = document.getElementById('termBody');
+let scene = 0;
+function paintScene(lines){
+  termBody.classList.add('wipe');
+  setTimeout(() => {
+    termBody.innerHTML = lines.map(l => `<div class="tl ${l.cls||''}">${l.html}</div>`).join('') + '<div class="tl"><span class="p">➜</span> <span class="cursor"></span></div>';
+    termBody.classList.remove('wipe');
+  }, 280);
+}
+paintScene(TERM_SCENES[0]);
+setInterval(() => { scene = (scene + 1) % TERM_SCENES.length; paintScene(TERM_SCENES[scene]); }, 4200);
+</script>
+</body>
+</html>
