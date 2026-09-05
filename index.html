@@ -3,216 +3,639 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="How Git actually works — ranked by what developers really type. Setup, stats, internals, glossary, command reference, workflows, conflicts, quiz and a printable cheat sheet.">
+<meta name="description" content="How Git actually works — ranked by what developers really type. Setup, configuration, internals, rebasing, conflicts, pushing after a rebase, rescue scenarios, quiz and a printable cheat sheet.">
 <meta name="theme-color" content="#0b0e14">
 <title>git, decoded — how Git actually works, ranked by real usage</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0e14'/%3E%3Cpath d='M8 24V13c0-3 2-5 5-5h6' stroke='%23f0512f' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='26' r='3.4' fill='%23f0512f'/%3E%3Ccircle cx='22' cy='8' r='3.4' fill='%2358a6ff'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0b0e14; --bg2:#0e1219; --panel:#121826; --panel2:#0d1117;
-  --line:rgba(255,255,255,.09); --line-strong:rgba(255,255,255,.18);
-  --ink:#e8ecf4; --muted:#98a2b6;
-  --orange:#f0512f; --orange-d:#d9431f;
-  --green:#3ecf6e; --blue:#58a6ff; --yellow:#e3b341; --magenta:#c678dd; --red:#f85149; --cyan:#39c5cf;
-  --paper:#eef1f5; --paper2:#e6ebf1; --ink-d:#12161f; --muted-d:#57616f; --line-d:rgba(18,22,31,.13);
-  --disp:'Archivo',system-ui,sans-serif;
-  --body:'IBM Plex Sans',system-ui,sans-serif;
-  --mono:'JetBrains Mono',ui-monospace,monospace;
-  --nav-h:64px;
-}
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-::selection{background:var(--orange);color:#140b08}
-a{color:inherit;text-decoration:none}
-img,svg{display:block;max-width:100%}
-button{font:inherit;background:none;border:none;color:inherit;cursor:pointer}
-input{font:inherit}
-code{font-family:var(--mono)}
-:focus-visible{outline:2px dashed var(--orange);outline-offset:3px}
-.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
-section{scroll-margin-top:calc(var(--nav-h) + 20px)}
-.js .reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.16,1,.3,1)}
-.js .reveal.in{opacity:1;transform:none}
-.hide{display:none!important}
-.progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:60}
-.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--orange),var(--yellow))}
-.nav{position:fixed;top:0;left:0;right:0;z-index:50;height:var(--nav-h);background:rgba(11,14,20,.82);backdrop-filter:blur(10px);border-bottom:1px solid transparent;transition:border-color .3s}
-.nav.scrolled{border-bottom-color:var(--line)}
-.nav-in{height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;gap:16px}
-.logo{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-weight:700;font-size:15px;flex:none}
-.logo-mark{width:22px;height:22px}
-.logo-comma{color:var(--orange)}
-.nav-links{display:flex;gap:18px}
-.nav-links a{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 0;border-bottom:2px solid transparent;transition:color .2s,border-color .2s;white-space:nowrap}
-.nav-links a:hover{color:var(--ink)}
-.nav-links a.active{color:var(--orange);border-bottom-color:var(--orange)}
-.nav-links a.nav-danger:hover,.nav-links a.nav-danger.active{color:var(--red);border-bottom-color:var(--red)}
-.burger{display:none;flex-direction:column;gap:5px;padding:8px}
-.burger span{width:22px;height:2px;background:var(--ink);transition:transform .3s,opacity .3s}
-.burger[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-.burger[aria-expanded="true"] span:nth-child(2){opacity:0}
-.burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-.kicker{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--orange);margin-bottom:14px}
-.kicker.kr{color:var(--red)}
-.btn{display:inline-block;font-family:var(--mono);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:14px 22px;border-radius:6px;transition:transform .18s ease,box-shadow .18s ease,border-color .18s,color .18s}
-.btn.primary{background:var(--orange);color:#140b08;box-shadow:4px 4px 0 rgba(240,81,47,.28)}
-.btn.primary:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 rgba(240,81,47,.32)}
-.btn.ghost{border:1px solid var(--line-strong);color:var(--ink)}
-.btn.ghost:hover{border-color:var(--orange);color:var(--orange)}
-.sec{padding:clamp(64px,9vw,118px) 0;position:relative;background-image:radial-gradient(rgba(255,255,255,.045) 1px,transparent 1px);background-size:26px 26px}
-.sec-head{max-width:820px;margin-bottom:clamp(36px,5vw,58px)}
-.sec-head h2{font-family:var(--disp);font-weight:800;font-size:clamp(2rem,4.6vw,3.4rem);line-height:1.04;letter-spacing:-.015em;margin-bottom:16px}
-.sec-sub{color:var(--muted);font-size:clamp(15px,1.5vw,17.5px);max-width:66ch}
-.ex{position:relative;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:13px 74px 13px 15px}
-.light .ex{background:#101522;border-color:#101522}
-.ex code{font-size:12.8px;line-height:1.75;color:#d6e2f0;white-space:pre-wrap;word-break:break-word}
-.copy{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line-strong);border-radius:4px;padding:4px 9px;transition:all .2s;background:rgba(11,14,20,.55)}
-.copy:hover{color:var(--green);border-color:var(--green)}
-.copy.done{color:var(--green);border-color:var(--green)}
-.dot{width:8px;height:8px;border-radius:50%;flex:none}
-.do{background:var(--orange)}.dg{background:var(--green)}.db{background:var(--blue)}.dy{background:var(--yellow)}.dm{background:var(--magenta)}
-.hero{position:relative;padding:calc(var(--nav-h) + clamp(44px,7vw,84px)) 0 clamp(20px,4vw,40px);overflow:hidden;background-image:radial-gradient(rgba(255,255,255,.05) 1px,transparent 1px);background-size:26px 26px}
-.hero-glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(620px 420px at 12% 8%,rgba(240,81,47,.16),transparent 62%),radial-gradient(560px 400px at 88% 72%,rgba(88,166,255,.12),transparent 60%)}
-.hero-grid{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(28px,4vw,56px);align-items:center}
-.hero h1{font-family:var(--disp);font-weight:900;font-size:clamp(3.1rem,8.4vw,6.4rem);line-height:.94;letter-spacing:-.025em;margin:6px 0 22px}
-.hero h1 .hl{color:var(--orange)}
-.lede{color:var(--muted);font-size:clamp(15.5px,1.6vw,18px);max-width:52ch;margin-bottom:28px}
-.cta-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:30px}
-.hero-chips{display:flex;gap:10px;flex-wrap:wrap;list-style:none}
-.hero-chips li{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;letter-spacing:.03em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 13px;background:rgba(255,255,255,.02)}
-.terminal{background:var(--panel2);border:1px solid var(--line-strong);border-radius:10px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.02) inset}
-.term-bar{display:flex;align-items:center;gap:7px;padding:11px 14px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.025)}
-.td{width:11px;height:11px;border-radius:50%}
-.td.r{background:#ff5f57}.td.y{background:#febc2e}.td.g{background:#28c840}
-.term-title{margin-left:10px;font-family:var(--mono);font-size:11.5px;color:var(--muted);letter-spacing:.04em}
-.term-body{padding:18px 18px 22px;font-family:var(--mono);font-size:13.2px;line-height:1.7;min-height:322px;transition:opacity .4s}
-.term-body.wipe{opacity:0}
-.tl{white-space:pre-wrap;word-break:break-word}
-.tl .p{color:var(--green);font-weight:700}
-.tl.dim{color:var(--muted)}
-.tl.g{color:var(--green)}
-.tl.c{color:var(--cyan)}
-.tl .g{color:var(--green)}.tl .y{color:var(--yellow)}.tl .b{color:var(--blue)}
-.cursor{display:inline-block;width:8px;height:15px;background:var(--green);vertical-align:-2px;animation:blink 1s steps(1) infinite}
-@keyframes blink{50%{opacity:0}}
-.branchline{width:100%;height:auto;margin-top:clamp(34px,5vw,58px);color:rgba(255,255,255,.3)}
-.bl-main{stroke:currentColor;stroke-width:2;fill:none;stroke-dasharray:1300;stroke-dashoffset:1300;transition:stroke-dashoffset 1.5s ease .1s}
-.bl-branch{stroke:var(--orange);opacity:.65;stroke-width:2;fill:none;stroke-dasharray:760;stroke-dashoffset:760;transition:stroke-dashoffset 1.2s ease .6s}
-.branchline.in .bl-main,.branchline.in .bl-branch{stroke-dashoffset:0}
-.bl-dot{transform:scale(0);transform-box:fill-box;transform-origin:center;transition:transform .5s cubic-bezier(.34,1.56,.64,1);transition-delay:var(--dd,0s)}
-.branchline.in .bl-dot{transform:scale(1)}
-.bl-dot.do{fill:var(--orange)}.bl-dot.db{fill:var(--blue)}
-.light{background:var(--paper);color:var(--ink-d);background-image:radial-gradient(rgba(18,22,31,.07) 1px,transparent 1px);background-size:26px 26px}
-.light.alt{background-color:var(--paper2)}
-.light .kicker{color:var(--orange-d)}
-.light .sec-sub{color:var(--muted-d)}
-.light code{color:var(--orange-d)}
-.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-.setup-step{background:#fff;border:1px solid var(--line-d);border-radius:10px;padding:26px 22px 22px;position:relative}
-.step-num{position:absolute;top:-13px;left:18px;background:var(--orange-d);color:#fff;font-family:var(--mono);font-weight:700;font-size:12px;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center}
-.setup-step h3{font-family:var(--disp);font-weight:700;font-size:17px;margin:4px 0 6px;text-transform:lowercase}
-.setup-step p{font-size:13.5px;color:var(--muted-d);margin-bottom:12px}
-.setup-step p code{background:var(--paper2);border:1px solid var(--line-d);border-radius:4px;padding:1px 5px;font-size:12px}
-.setup-verify{margin-top:22px;font-family:var(--mono);font-size:13px;color:var(--muted-d);border:1px dashed var(--line-d);border-radius:8px;padding:13px 18px}
-.setup-verify code{color:var(--orange-d)}
-.usage-grid{display:grid;grid-template-columns:1.45fr .85fr;gap:clamp(28px,4vw,56px);align-items:start}
-.bars{display:flex;flex-direction:column;gap:9px}
-.uro{display:grid;grid-template-columns:30px minmax(128px,180px) 1fr 48px 92px;align-items:center;gap:12px;padding:7px 10px;border-radius:6px;transition:background .2s}
-.uro:hover{background:rgba(255,255,255,.035)}
-.uro .rank{font-family:var(--mono);font-size:11px;color:var(--muted)}
-.uro code{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar{height:9px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
-.bar i{display:block;height:100%;width:0;background:var(--tc,var(--green));border-radius:3px;transition:width 1.15s cubic-bezier(.22,1,.36,1);transition-delay:var(--d,0s)}
-.uro.in .bar i{width:var(--w)}
-.uro .pct{font-family:var(--mono);font-size:12px;text-align:right}
-.ttag{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:3px;text-align:center}
-.ttag.t-daily{color:var(--green);background:rgba(62,207,110,.12)}
-.ttag.t-weekly{color:var(--blue);background:rgba(88,166,255,.12)}
-.ttag.t-setup{color:var(--yellow);background:rgba(227,179,65,.12)}
-.flags{position:sticky;top:calc(var(--nav-h) + 24px);border:1px solid var(--line);border-radius:10px;padding:24px;background:rgba(255,255,255,.02)}
-.flags h3{font-family:var(--mono);font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--orange);margin-bottom:6px}
-.flags>p{font-size:13.5px;color:var(--muted);margin-bottom:18px}
-.flag-list{display:flex;flex-direction:column;gap:8px}
-.flag{display:flex;gap:12px;align-items:baseline;border:1px solid var(--line);border-radius:6px;padding:9px 12px;transition:border-color .2s,transform .2s}
-.flag:hover{border-color:var(--orange);transform:translateX(4px)}
-.flag code{font-size:12.5px;color:var(--green);font-weight:700;flex:none;min-width:118px}
-.flag span{font-size:12.5px;color:var(--muted);line-height:1.45}
-.flag em{font-style:normal;color:var(--ink);opacity:.75}
-.src-note{margin-top:18px;font-family:var(--mono);font-size:11px;color:var(--muted);opacity:.8}
-.light .src-note{color:var(--muted-d)}
-.pipeline{display:flex;align-items:stretch;gap:6px;margin-bottom:22px}
-.stage{flex:1;display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;background:#fff;border:1px solid var(--line-d);border-radius:8px;padding:16px 14px;transition:border-color .2s,box-shadow .2s,transform .2s}
-.stage:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(18,22,31,.1)}
-.stage.active{border-color:var(--orange-d);box-shadow:0 0 0 3px rgba(217,67,31,.14)}
-.s-dot{width:10px;height:10px;border-radius:50%;background:var(--line-d);margin-bottom:6px;transition:background .2s,box-shadow .2s}
-.stage.active .s-dot{background:var(--orange-d);box-shadow:0 0 0 4px rgba(217,67,31,.18)}
-.s-name{font-family:var(--mono);font-size:13px;font-weight:700}
-.s-sub{font-size:11.5px;color:var(--muted-d)}
-.arrow{flex:0 0 auto;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:0 4px;align-self:center}
-.arrow .f{font-family:var(--mono);font-size:10.5px;color:var(--orange-d);font-weight:700;white-space:nowrap}
-.arrow .b{font-family:var(--mono);font-size:10.5px;color:var(--muted-d);white-space:nowrap}
-.stage-detail{background:#fff;border:1px solid var(--line-d);border-left:4px solid var(--orange-d);border-radius:8px;padding:22px 24px;margin-bottom:clamp(40px,6vw,64px);min-height:132px}
-.stage-detail h4{font-family:var(--disp);font-weight:700;font-size:18px;margin-bottom:8px}
-.stage-detail p{color:var(--muted-d);font-size:14.5px;max-width:75ch;margin-bottom:12px}
-.stage-detail code{display:inline-block;background:var(--paper2);border:1px solid var(--line-d);border-radius:5px;padding:4px 10px;font-size:12.5px;color:var(--ink-d)}
-.laws{display:flex;flex-direction:column;margin-bottom:clamp(40px,6vw,64px)}
-.law{display:grid;grid-template-columns:120px 1fr;gap:20px;padding:26px 0;border-top:1px solid var(--line-d)}
-.law:last-child{border-bottom:1px solid var(--line-d)}
-.law-num{font-family:var(--disp);font-weight:900;font-size:clamp(2.4rem,5vw,3.6rem);line-height:1;color:transparent;-webkit-text-stroke:1.5px rgba(18,22,31,.3)}
-.law h3{font-family:var(--disp);font-weight:700;font-size:clamp(17px,1.8vw,20px);margin-bottom:6px}
-.law p{color:var(--muted-d);font-size:14.5px;max-width:70ch}
-.law code{background:var(--paper2);border:1px solid var(--line-d);border-radius:4px;padding:1px 6px;font-size:12.5px;color:var(--orange-d)}
-.zoo{display:flex;flex-direction:column;gap:10px;margin-bottom:clamp(40px,6vw,64px)}
-.zoo-row{display:grid;grid-template-columns:110px 1fr;gap:18px;align-items:baseline;background:#fff;border:1px solid var(--line-d);border-left:4px solid var(--zc,var(--orange-d));border-radius:8px;padding:15px 18px}
-.z-label{font-family:var(--mono);font-weight:700;font-size:15px;color:var(--zc)}
-.zoo-row p{font-size:13.5px;color:var(--muted-d)}
-.zoo-note{font-size:12.5px;color:var(--muted-d);font-family:var(--mono);padding:5px 2px 0}
-.objwrap{background:#fff;border:1px solid var(--line-d);border-radius:10px;padding:clamp(20px,3vw,36px)}
-.objfig{width:100%;max-width:760px;margin:0 auto;height:auto;color:rgba(18,22,31,.35)}
-.of-line{stroke:currentColor;stroke-width:2;fill:none;stroke-dasharray:520;stroke-dashoffset:520;transition:stroke-dashoffset 1.2s ease .1s}
-.of-branch{stroke:var(--orange-d);opacity:.7;stroke-width:2;fill:none;stroke-dasharray:300;stroke-dashoffset:300;transition:stroke-dashoffset 1s ease .7s}
-.objwrap.in .of-line,.objwrap.in .of-branch{stroke-dashoffset:0}
-.of-dot{transform:scale(0);transform-box:fill-box;transform-origin:center;transition:transform .5s cubic-bezier(.34,1.56,.64,1);transition-delay:var(--dd,0s)}
-.objwrap.in .of-dot{transform:scale(1)}
-.of-dot.dm{fill:var(--ink-d)}.of-dot.dmo{fill:var(--orange-d)}
-.of-t{font-family:var(--mono);font-size:12px;fill:var(--muted-d);text-anchor:middle}
-.of-lb{font-family:var(--mono);font-size:12.5px;font-weight:700;fill:var(--ink-d)}
-.of-lb.lo{fill:var(--orange-d)}.of-lb.lh{fill:var(--muted-d)}
-.fig-cap{margin-top:16px;font-size:13.5px;color:var(--muted-d);text-align:center;max-width:64ch;margin-left:auto;margin-right:auto}
-.gloss-tools{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fff;border:1px solid var(--line-d);border-radius:8px;padding:12px 18px;margin-bottom:26px}
-.prompt-label{font-family:var(--mono);font-size:13px;color:var(--orange-d);font-weight:700}
-.gloss-tools input{flex:1;min-width:200px;border:none;background:none;font-family:var(--mono);font-size:14px;color:var(--ink-d);outline:none}
-.gcount{font-family:var(--mono);font-size:12px;color:var(--muted-d)}
-.g-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(255px,100%),1fr));gap:14px}
-.g-card{background:#fff;border:1px solid var(--line-d);border-radius:8px;padding:16px 18px;transition:transform .2s,box-shadow .2s,border-color .2s}
-.g-card:hover{transform:translateY(-3px);box-shadow:0 12px 28px rgba(18,22,31,.1);border-color:rgba(217,67,31,.5)}
-.g-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
-.g-card h4{font-family:var(--mono);font-size:14px;font-weight:700}
-.g-tag{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:3px 7px;border-radius:3px;flex:none}
-.g-tag.core{color:var(--orange-d);background:rgba(217,67,31,.12)}
-.g-tag.object{color:#2b6cb0;background:rgba(88,166,255,.16)}
-.g-tag.workflow{color:#237a45;background:rgba(62,207,110,.16)}
-.g-tag.safety{color:#a03028;background:rgba(248,81,73,.14)}
-.g-card p{font-size:13px;color:var(--muted-d);line-height:1.55}
-.g-empty{font-family:var(--mono);color:var(--muted);font-size:13px;padding:20px 0}
-.light .g-empty{color:var(--muted-d)}
-.cmd-tools{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:28px}
-.tabs{display:flex;gap:8px;flex-wrap:wrap}
-.tab{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:9px 15px;border:1px solid var(--line-strong);border-radius:6px;color:var(--muted);transition:all .2s}
-.tab:hover{border-color:var(--orange);color:var(--ink)}
-.tab.active{background:var(--orange);border-color:var(--orange);color:#140b08;font-weight:700}
-.cmd-search{display:flex;align-items:center;gap:10px;border:1px solid var(--line-strong);border-radius:6px;padding:8px 14px}
-.cmd-search label{font-family:var(--mono);font-size:12px;color:var(--green);font-weight:700}
-.cmd-search input{background:none;border:none;outline:none;color:var(--ink);font-family:var(--mono);font-size:13px;width:180px}
-.cmd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(430px,100%),1fr));gap:18px}
-.cmd-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px;display:flex;flex-direction:column;gap:14px;transition:transform .22s,border-color .22s,box-shadow .22s}
-.cmd-card:hover{transform:translateY(-4px);border-color:var(--cc,var(--green));box-shadow:0 16px 40px rgba(0,0,0,.4)}
-.cmd-card[data-tier="daily"]{--cc:var(--green)}
-.cmd-card[data-tier="weekly"]{--cc:var(--blue)}
-.cmd-card[data-tier="power"]{--cc:var(--magenta)}
-.cc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.cc-name{font-family:var(--mono);font-size:clamp(18px,2vw,21px);font-weigh
+<link rel="stylesheet" href="assets/style.css">
+</head>
+
+<body>
+<div class="progress" aria-hidden="true"><span id="prog"></span></div>
+<header class="nav" id="nav">
+  <div class="wrap nav-in">
+    <a class="logo" href="#top" aria-label="git, decoded home">
+      <svg class="logo-mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#0b0e14"/><path d="M8 24V13c0-3 2-5 5-5h6" stroke="#f0512f" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="8" cy="26" r="3.4" fill="#f0512f"/><circle cx="22" cy="8" r="3.4" fill="#58a6ff"/></svg>
+      git<span class="logo-comma">,</span> decoded
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#setup">Setup</a>
+      <a href="#usage">Usage</a>
+      <a href="#internals">Internals</a>
+      <a href="#glossary">Glossary</a>
+      <a href="#commands">Commands</a>
+      <a href="#workflows">Workflows</a>
+      <a href="#rebasing">Rebasing</a>
+      <a href="#conflicts" class="nav-danger">Conflicts</a>
+      <a href="#pushing">Pushing</a>
+      <a href="#rescue">Rescue</a>
+      <a href="#quiz">Quiz</a>
+      <a href="#cheatsheet">Cheat sheet</a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileNav"><span></span><span></span><span></span></button>
+  </div>
+</header>
+<nav class="mobile-nav" id="mobileNav" aria-label="Mobile">
+  <a href="#setup">Setup</a>
+  <a href="#usage">Usage</a>
+  <a href="#internals">Internals</a>
+  <a href="#glossary">Glossary</a>
+  <a href="#commands">Commands</a>
+  <a href="#workflows">Workflows</a>
+  <a href="#rebasing">Rebasing</a>
+  <a href="#conflicts">Conflicts</a>
+  <a href="#pushing">Pushing</a>
+  <a href="#rescue">Rescue</a>
+  <a href="#quiz">Quiz</a>
+  <a href="#cheatsheet">Cheat sheet</a>
+</nav>
+
+<main id="top">
+<section class="hero">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="wrap hero-grid">
+    <div>
+      <p class="kicker">Mental models &gt; memorizing flags</p>
+      <h1>git<span class="hl">,</span><br>decoded</h1>
+      <p class="lede">How Git actually works — ranked by what developers really type. Snapshots, pointers, and the commands you’ll use every day.</p>
+      <div class="cta-row">
+        <a class="btn primary" href="#setup">Start with setup</a>
+        <a class="btn ghost" href="#commands">Jump to commands</a>
+      </div>
+      <ul class="hero-chips">
+        <li><span class="dot do"></span>usage-ranked</li>
+        <li><span class="dot db"></span>internals</li>
+        <li><span class="dot dg"></span>conflict rescue</li>
+        <li><span class="dot dy"></span>printable sheet</li>
+      </ul>
+    </div>
+    <div class="terminal" aria-label="Animated terminal demo">
+      <div class="term-bar"><span class="td r"></span><span class="td y"></span><span class="td g"></span><span class="term-title">~/project — zsh</span></div>
+      <div class="term-body" id="termBody"></div>
+    </div>
+  </div>
+  <div class="wrap">
+    <svg class="branchline reveal" viewBox="0 0 1100 120" fill="none" aria-hidden="true">
+      <path class="bl-main" d="M40 60 H1060"/>
+      <path class="bl-branch" d="M420 60 C480 60 500 20 560 20 H760"/>
+      <circle class="bl-dot do" style="--dd:.9s" cx="120" cy="60" r="7"/>
+      <circle class="bl-dot db" style="--dd:1.05s" cx="280" cy="60" r="7"/>
+      <circle class="bl-dot do" style="--dd:1.2s" cx="420" cy="60" r="7"/>
+      <circle class="bl-dot do" style="--dd:1.35s" cx="560" cy="20" r="7"/>
+      <circle class="bl-dot db" style="--dd:1.5s" cx="760" cy="20" r="7"/>
+      <circle class="bl-dot do" style="--dd:1.65s" cx="900" cy="60" r="7"/>
+    </svg>
+  </div>
+</section>
+
+<section class="sec light" id="setup">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">01 · Setup</p>
+      <h2>Get Git ready in eight moves</h2>
+      <p class="sec-sub">Install once, configure your identity, and you’ll never wonder why commits say “unknown” again.</p>
+    </div>
+    <div class="setup-grid reveal">
+      <article class="setup-step"><span class="step-num">1</span><h3>Install</h3><p>macOS: <code>brew install git</code> · Windows: Git for Windows · Linux: <code>sudo apt install git</code></p><div class="ex"><code>git --version</code><button class="copy" type="button" data-copy="git --version">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">2</span><h3>Who you are</h3><p>Every commit stores author name + email. Set them globally once.</p><div class="ex"><code>git config --global user.name "Ada Lovelace"
+git config --global user.email "ada@example.com"</code><button class="copy" type="button" data-copy="git config --global user.name &quot;Ada Lovelace&quot;&#10;git config --global user.email &quot;ada@example.com&quot;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">3</span><h3>Sensible defaults</h3><p>Default branch name, better diffs, and a readable log alias.</p><div class="ex"><code>git config --global init.defaultBranch main
+git config --global pull.rebase false
+git config --global alias.lg "log --oneline --graph --decorate -20"</code><button class="copy" type="button" data-copy="git config --global init.defaultBranch main&#10;git config --global pull.rebase false&#10;git config --global alias.lg &quot;log --oneline --graph --decorate -20&quot;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">4</span><h3>First repo</h3><p>Turn any folder into a repository, or clone an existing one.</p><div class="ex"><code>git init
+# or
+git clone https://github.com/org/repo.git</code><button class="copy" type="button" data-copy="git init">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">5</span><h3>Know your scopes</h3><p>Config resolves <code>--system</code> → <code>--global</code> → <code>--local</code>; the nearest wins. Override identity per repo without touching global.</p><div class="ex"><code>git config --list --show-origin
+git config --local user.email "work@company.com"</code><button class="copy" type="button" data-copy="git config --list --show-origin&#10;git config --local user.email &quot;work@company.com&quot;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">6</span><h3>Two identities, one machine</h3><p><code>includeIf</code> loads a different config by directory — work email inside <code>~/work/</code>, personal everywhere else.</p><div class="ex"><code># ~/.gitconfig
+[includeIf "gitdir:~/work/"]
+  path = ~/.gitconfig-work</code><button class="copy" type="button" data-copy="# ~/.gitconfig&#10;[includeIf &quot;gitdir:~/work/&quot;]&#10;  path = ~/.gitconfig-work">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">7</span><h3>Credentials &amp; signing</h3><p>Tokens never go in remote URLs — use <code>gh auth setup-git</code> or a credential manager. SSH signing makes your history verifiable.</p><div class="ex"><code>gh auth setup-git
+git config --global gpg.format ssh
+git config --global user.signingkey ~/.ssh/id_ed25519.pub
+git config --global commit.gpgsign true</code><button class="copy" type="button" data-copy="gh auth setup-git&#10;git config --global gpg.format ssh&#10;git config --global user.signingkey ~/.ssh/id_ed25519.pub&#10;git config --global commit.gpgsign true">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">8</span><h3>Safety &amp; hygiene</h3><p>Prune dead branches, see the base in conflicts, record resolutions once and reuse them forever. Team hooks live in the repo via <code>core.hooksPath</code>; personal ignores in <code>core.excludesFile</code>.</p><div class="ex"><code>git config --global fetch.prune true
+git config --global push.default current
+git config --global push.autoSetupRemote true
+git config --global merge.conflictStyle zdiff3
+git config --global rerere.enabled true
+git config --global rerere.autoupdate true</code><button class="copy" type="button" data-copy="git config --global fetch.prune true&#10;git config --global push.default current&#10;git config --global push.autoSetupRemote true&#10;git config --global merge.conflictStyle zdiff3&#10;git config --global rerere.enabled true&#10;git config --global rerere.autoupdate true">copy</button></div></article>
+    </div>
+    <p class="setup-verify reveal">Verify: <code>git --version</code> (this guide assumes Git ≥ 2.40 — <code>zdiff3</code> needs 2.35, <code>push.autoSetupRemote</code> needs 2.37) then <code>git config --list --show-origin | head</code> — you should see your name, email, and defaults.</p>
+  </div>
+</section>
+
+<section class="sec" id="usage">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">02 · Real usage</p>
+      <h2>What people actually type</h2>
+      <p class="sec-sub">Relative frequencies from public command telemetry and surveys — not a syllabus. Learn the top of the list first.</p>
+    </div>
+    <div class="usage-grid">
+      <div class="bars reveal" id="usageBars"></div>
+      <aside class="flags reveal">
+        <h3>Flags worth knowing</h3>
+        <p>A few options do most of the work in daily Git.</p>
+        <div class="flag-list">
+          <div class="flag"><code>--oneline</code><span>Compact history — one commit per line</span></div>
+          <div class="flag"><code>-a</code><span><em>commit -a</em> stages tracked edits then commits</span></div>
+          <div class="flag"><code>-m</code><span>Inline commit message (skip the editor)</span></div>
+          <div class="flag"><code>-u</code><span><em>push -u</em> sets upstream tracking once</span></div>
+          <div class="flag"><code>--amend</code><span>Rewrite the tip commit (local only)</span></div>
+          <div class="flag"><code>--force-with-lease</code><span>Safer force-push than <em>--force</em></span></div>
+        </div>
+        <p class="src-note">Illustrative ranks for learning priority — qualitative, not measured telemetry. Your team’s mix will differ.</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="sec light alt" id="internals">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">03 · Internals</p>
+      <h2>Three areas, three object types</h2>
+      <p class="sec-sub">Git is a content-addressed snapshot store with movable labels. Once that clicks, every command is just moving data or pointers.</p>
+    </div>
+
+    <div class="pipeline reveal" id="pipeline" role="tablist" aria-label="Git areas"></div>
+    <div class="stage-detail reveal" id="stageDetail"></div>
+
+    <div class="laws reveal">
+      <div class="law"><div class="law-num">01</div><div><h3>Commits are snapshots, not diffs</h3><p>Each commit points at a full tree of your project. Unchanged files reuse the same blob hashes — that’s why snapshots stay cheap.</p></div></div>
+      <div class="law"><div class="law-num">02</div><div><h3>A branch is a 41-byte pointer</h3><p>Creating <code>feature</code> writes a tiny file containing a commit hash. Branching is fast because nothing is copied.</p></div></div>
+      <div class="law"><div class="law-num">03</div><div><h3>HEAD says where you are</h3><p><code>HEAD</code> usually points at a branch name. Detached HEAD means it points straight at a commit — fine for looking, risky for new work.</p></div></div>
+    </div>
+
+    <div class="zoo reveal">
+      <div class="zoo-row" style="--zc:var(--orange-d)"><div class="z-label">blob</div><p>Raw file bytes. No filename. Same content → same hash everywhere.</p></div>
+      <div class="zoo-row" style="--zc:#2b6cb0"><div class="z-label">tree</div><p>Directory listing: names → blob/tree hashes. Rebuilds the filesystem shape.</p></div>
+      <div class="zoo-row" style="--zc:#237a45"><div class="z-label">commit</div><p>Metadata + pointer to a root tree + parent commit(s). History is a DAG.</p></div>
+      <div class="zoo-row" style="--zc:#a03028"><div class="z-label">ref</div><p>Human name for a hash: branches, tags, remotes. Labels you move around.</p></div>
+    </div>
+    <p class="zoo-note reveal">Pro tip: <code>git cat-file -t &lt;hash&gt;</code> and <code>git cat-file -p &lt;hash&gt;</code> peek under the hood.</p>
+
+    <div class="objwrap reveal">
+      <svg class="objfig" viewBox="0 0 760 280" aria-label="Commit pointing to tree pointing to blobs">
+        <path class="of-line" d="M120 80 H280"/>
+        <path class="of-line" d="M380 80 H520"/>
+        <path class="of-branch" d="M520 80 C560 80 580 140 620 140"/>
+        <path class="of-branch" d="M520 80 C560 80 580 220 620 220"/>
+        <circle class="of-dot dm" style="--dd:.4s" cx="80" cy="80" r="10"/>
+        <circle class="of-dot dmo" style="--dd:.7s" cx="330" cy="80" r="10"/>
+        <circle class="of-dot dm" style="--dd:1s" cx="660" cy="140" r="8"/>
+        <circle class="of-dot dm" style="--dd:1.15s" cx="660" cy="220" r="8"/>
+        <text class="of-lb" x="80" y="55" text-anchor="middle">commit</text>
+        <text class="of-lb lo" x="330" y="55" text-anchor="middle">tree</text>
+        <text class="of-lb" x="660" y="120" text-anchor="middle">blob</text>
+        <text class="of-lb" x="660" y="200" text-anchor="middle">blob</text>
+        <text class="of-t" x="200" y="70">tree hash</text>
+        <text class="of-t" x="450" y="70">entries</text>
+        <text class="of-lb lh" x="80" y="115" text-anchor="middle">parents · author · msg</text>
+      </svg>
+      <p class="fig-cap">A commit names a tree; the tree names blobs (and nested trees). Filenames live in trees — not inside blobs.</p>
+    </div>
+  </div>
+</section>
+
+<section class="sec light" id="glossary">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">04 · Glossary</p>
+      <h2>Words Git people throw around</h2>
+      <p class="sec-sub">Search the vocabulary of everyday collaboration — staging, upstream, rebase, and friends.</p>
+    </div>
+    <div class="gloss-tools reveal">
+      <span class="prompt-label">$</span>
+      <input id="glossQ" type="search" placeholder="filter terms…" aria-label="Filter glossary" autocomplete="off">
+      <span class="gcount" id="glossCount"></span>
+    </div>
+    <div class="g-grid reveal" id="glossGrid"></div>
+    <p class="g-empty hide" id="glossEmpty">No terms match that filter.</p>
+  </div>
+</section>
+
+<section class="sec" id="commands">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">05 · Command reference</p>
+      <h2>Commands by how often you’ll need them</h2>
+      <p class="sec-sub">Daily muscle memory first, then weekly teamwork, then power tools you reach for when something’s weird.</p>
+    </div>
+    <div class="cmd-tools reveal">
+      <div class="tabs" role="tablist" aria-label="Command tiers">
+        <button class="tab active" data-tier="all" type="button">All</button>
+        <button class="tab" data-tier="daily" type="button">Daily</button>
+        <button class="tab" data-tier="weekly" type="button">Weekly</button>
+        <button class="tab" data-tier="power" type="button">Power</button>
+      </div>
+      <div class="cmd-search">
+        <label for="cmdQ">grep</label>
+        <input id="cmdQ" type="search" placeholder="status, rebase…" aria-label="Search commands" autocomplete="off">
+      </div>
+    </div>
+    <div class="cmd-grid reveal" id="cmdGrid"></div>
+    <p class="cmd-empty hide" id="cmdEmpty">No commands match.</p>
+  </div>
+</section>
+
+<section class="sec" id="workflows">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">06 · Workflows</p>
+      <h2>Repeatable paths for real teams</h2>
+      <p class="sec-sub">Same verbs, different choreography — pick the shape that matches how your team ships.</p>
+    </div>
+    <div class="flow-grid reveal">
+      <article class="flow-card">
+        <h3>Feature branch + PR</h3>
+        <p>Isolate work, open a reviewable change, merge when green.</p>
+        <ol class="flow-steps">
+          <li><span>1</span><code>git switch -c feature/x</code></li>
+          <li><span>2</span>commit small, purposeful slices</li>
+          <li><span>3</span><code>git push -u origin HEAD</code></li>
+          <li><span>4</span>open PR → review → merge</li>
+        </ol>
+        <div class="ex"><code>git switch main && git pull
+git switch -c feature/login
+git add -p && git commit
+git push -u origin HEAD</code><button class="copy" type="button" data-copy="git switch main && git pull&#10;git switch -c feature/login&#10;git add -p && git commit&#10;git push -u origin HEAD">copy</button></div>
+      </article>
+      <article class="flow-card">
+        <h3>Hotfix on main</h3>
+        <p>Tiny, urgent patch with a clear message and fast follow-up.</p>
+        <ol class="flow-steps">
+          <li><span>1</span>branch from the broken release</li>
+          <li><span>2</span>one focused commit</li>
+          <li><span>3</span>ship, then back-port if needed</li>
+        </ol>
+        <div class="ex"><code>git switch -c hotfix/null-check
+# fix, test
+git commit -am "fix: guard null user id"
+git push -u origin HEAD</code><button class="copy" type="button" data-copy="git switch -c hotfix/null-check&#10;git commit -am &quot;fix: guard null user id&quot;&#10;git push -u origin HEAD">copy</button></div>
+      </article>
+      <article class="flow-card">
+        <h3>Update your branch</h3>
+        <p>Bring <code>main</code> into your branch. Personal branch? Rebase — clean and linear. Shared branch? Merge — never rewrite what others built on.</p>
+        <ol class="flow-steps">
+          <li><span>1</span><code>git fetch origin</code></li>
+          <li><span>2</span>merge or rebase onto latest main</li>
+          <li><span>3</span>resolve, test, push</li>
+        </ol>
+        <div class="ex"><code>git fetch origin
+git rebase origin/main
+# or: git merge origin/main</code><button class="copy" type="button" data-copy="git fetch origin&#10;git rebase origin/main">copy</button></div>
+      </article>
+      <article class="flow-card">
+        <h3>Fork → PR → stay in sync</h3>
+        <p>Your fork is <code>origin</code>; the real repo is <code>upstream</code>. Rebase onto upstream, publish with a lease.</p>
+        <ol class="flow-steps">
+          <li><span>1</span><code>git remote add upstream …</code></li>
+          <li><span>2</span><code>git fetch upstream && git rebase upstream/main</code></li>
+          <li><span>3</span><code>git push --force-with-lease origin HEAD</code></li>
+        </ol>
+<div class="ex"><code>git remote add upstream https://github.com/org/repo.git
+git fetch upstream
+git switch feature/x
+git rebase upstream/main
+git push --force-with-lease origin HEAD</code><button class="copy" type="button" data-copy="git remote add upstream https://github.com/org/repo.git&#10;git fetch upstream&#10;git switch feature/x&#10;git rebase upstream/main&#10;git push --force-with-lease origin HEAD">copy</button></div>
+      </article>
+      <article class="flow-card">
+        <h3>Clean PR before review</h3>
+        <p><code>wip</code> / <code>fix typo</code> noise? Tag repairs with <code>--fixup</code> and let autosquash fold them into the commit they belong to.</p>
+        <ol class="flow-steps">
+          <li><span>1</span><code>git commit --fixup abc1234</code></li>
+          <li><span>2</span><code>git rebase -i --autosquash origin/main</code></li>
+          <li><span>3</span><code>git push --force-with-lease</code></li>
+        </ol>
+<div class="ex"><code>git commit --fixup abc1234
+GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash origin/main
+git push --force-with-lease</code><button class="copy" type="button" data-copy="git commit --fixup abc1234&#10;GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash origin/main&#10;git push --force-with-lease">copy</button></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="sec light alt" id="rebasing">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">07 · Rebasing</p>
+      <h2>Rebasing, properly</h2>
+      <p class="sec-sub">Rebase replays your commits onto a new base — same content, brand-new objects, brand-new SHAs. Every benefit and every hazard follows from that one fact.</p>
+    </div>
+    <div class="setup-grid reveal">
+      <article class="setup-step"><span class="step-num">1</span><h3>Update onto latest main</h3><p>Working tree must be clean first — commit, stash, or rely on <code>--autostash</code>. Then replay onto the new tip: history stays linear. Conflicts return per replayed commit, so expect round 2, 3 … Re-run tests after every resolution, not only at the end.</p><div class="ex"><code>git fetch origin
+git rebase origin/main
+# daily habit once configured:
+git pull --rebase --autostash</code><button class="copy" type="button" data-copy="git fetch origin&#10;git rebase origin/main&#10;# daily habit once configured:&#10;git pull --rebase --autostash">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">2</span><h3>Interactive tidy-up</h3><p>The todo list rewrites history on purpose: <code>pick</code> keep · <code>reword</code> message · <code>squash</code>/<code>fixup</code> meld into previous · <code>drop</code> delete · <code>edit</code> stop to amend. <code>exec</code> runs tests per commit.</p><div class="ex"><code>git rebase -i origin/main
+# reorder lines, change verbs, save &amp; close</code><button class="copy" type="button" data-copy="git rebase -i origin/main&#10;# reorder lines, change verbs, save &amp; close">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">3</span><h3>Review round-trips</h3><p>Reviewer asked for changes inside commit 2? Record a fixup and autosquash it in. Turn it on permanently with <code>rebase.autoSquash true</code>.</p><div class="ex"><code>git commit --fixup abc1234
+git rebase -i --autosquash origin/main
+git push --force-with-lease</code><button class="copy" type="button" data-copy="git commit --fixup abc1234&#10;git rebase -i --autosquash origin/main&#10;git push --force-with-lease">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">4</span><h3>Conflicts during rebase</h3><p>Same drill as a merge — with one inversion: <code>--theirs</code> is the commit <em>being replayed</em>, <code>--ours</code> is the base you’re building on. Three exits: continue, skip (drop current commit), abort (undo all).</p><div class="ex"><code># resolve markers, then:
+git add &lt;file&gt;
+git rebase --continue
+# or: git rebase --skip / --abort</code><button class="copy" type="button" data-copy="# resolve markers, then:&#10;git add &lt;file&gt;&#10;git rebase --continue&#10;# or: git rebase --skip / --abort">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">5</span><h3>Surgery with --onto</h3><p>Transplant a range: replay the commits after <code>hotstart</code> onto a new base. Use it to salvage work branched from the wrong place.</p><div class="ex"><code>git rebase --onto main hotstart feature
+# rescue two commits from a doomed branch:
+git rebase --onto new-base a1b2c3d^ branch</code><button class="copy" type="button" data-copy="git rebase --onto main hotstart feature&#10;# rescue two commits from a doomed branch:&#10;git rebase --onto new-base a1b2c3d^ branch">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">6</span><h3>Undo a finished rebase</h3><p>The rewritten commits aren’t gone — <code>ORIG_HEAD</code> marks where you were, and <code>reflog</code> lists every move HEAD made.</p><div class="ex"><code>git reset --hard ORIG_HEAD
+# or:
+git reflog
+git reset --hard HEAD@{4}</code><button class="copy" type="button" data-copy="git reset --hard ORIG_HEAD&#10;# or:&#10;git reflog&#10;git reset --hard HEAD@{4}">copy</button></div></article>
+    </div>
+    <div class="laws reveal">
+      <div class="law"><div class="law-num">01</div><div><h3>The golden rule</h3><p>Never rebase commits other people have built on. Your branch, your rewrite; shared branch, merge instead. If a rewrite touches anything public, announce it first and hand teammates the refresh recipe from section 09.</p></div></div>
+      <div class="law"><div class="law-num">02</div><div><h3>Rebase onto, don’t merge down</h3><p><code>git merge origin/main</code> on a long-lived feature adds a merge commit every sync; after five syncs the PR is unreadable. <code>git rebase origin/main</code> keeps “my work sits on top of main” — reviewers and <code>git log</code> stay sane.</p></div></div>
+      <div class="law"><div class="law-num">03</div><div><h3>Merges need special handling</h3><p>Rebasing a branch that contains merge commits flattens them. Use <code>git rebase --rebase-merges</code> to rebuild the topology — or simply merge for that branch. Both are fine; silent flattening is not.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec light" id="conflicts">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker kr">08 · Conflicts</p>
+      <h2>When Git can’t decide for you</h2>
+      <p class="sec-sub">A conflict means two edits touched the same lines. You choose the final truth, then tell Git you’re done.</p>
+    </div>
+    <div class="conflict-grid">
+      <div class="conflict-panel reveal">
+        <h3>markers in the file — zdiff3 style</h3>
+        <div class="conflict-body"><span class="mk">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+your version on the current branch
+<span class="base">||||||| base</span>
+what both sides started from
+<span class="base">=======</span>
+incoming version from the other side
+<span class="th">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/login</span></div>
+      </div>
+      <div class="conflict-steps reveal">
+        <div class="cstep"><h4>1. See what’s conflicted</h4><p>List unmerged paths and open them.</p><div class="ex"><code>git status
+git diff</code><button class="copy" type="button" data-copy="git status">copy</button></div></div>
+        <div class="cstep"><h4>2. Edit out the markers</h4><p>Keep the correct code. Delete <code>&lt;&lt;&lt;</code> / <code>===</code> / <code>&gt;&gt;&gt;</code> lines.</p></div>
+        <div class="cstep"><h4>3. Mark resolved &amp; continue</h4><p>Stage the file, then continue the merge or rebase.</p><div class="ex"><code>git add path/to/file
+git merge --continue
+# or: git rebase --continue</code><button class="copy" type="button" data-copy="git add path/to/file&#10;git merge --continue">copy</button></div></div>
+        <div class="cstep"><h4>Abort if needed</h4><p>Bail out cleanly when the merge isn’t worth finishing yet.</p><div class="ex"><code>git merge --abort
+git rebase --abort</code><button class="copy" type="button" data-copy="git merge --abort">copy</button></div></div>
+        <div class="cstep"><h4>Upgrade your view</h4><p><code>zdiff3</code> inserts the shared base between the two sides so you see <em>why</em> they diverged. <code>rerere</code> records each resolution and replays it automatically when the same conflict returns on a later commit.</p><div class="ex"><code>git config --global merge.conflictStyle zdiff3
+git config --global rerere.enabled true
+git config --global rerere.autoupdate true</code><button class="copy" type="button" data-copy="git config --global merge.conflictStyle zdiff3&#10;git config --global rerere.enabled true&#10;git config --global rerere.autoupdate true">copy</button></div></div>
+      </div>
+    </div>
+
+    <div class="setup-grid reveal" style="margin-top:28px">
+      <article class="setup-step"><h3>Triage before editing</h3><p>Not every conflict shows markers. <code>UU</code> both modified · <code>AA</code> both added · <code>DU</code>/<code>UD</code> one side deleted · <code>AU</code>/<code>UA</code> one side added · rename/rename forces one new name.</p><div class="ex"><code>git status --short
+git diff --name-only --diff-filter=U</code><button class="copy" type="button" data-copy="git status --short&#10;git diff --name-only --diff-filter=U">copy</button></div></article>
+      <article class="setup-step"><h3>Whole-file decisions</h3><p>When one side should simply win, skip line surgery — this <em>discards the other side entirely</em>. Prefer <code>git restore</code> (Git 2.23+) over overloaded <code>checkout</code>. Always put <code>--</code> before the path. In a <em>merge</em>: ours = your branch. In a <em>rebase</em>: inverted — theirs = the commit being replayed.</p><div class="ex"><code>git restore --ours -- path/file.py    # merge: keep your side
+git restore --theirs -- path/file.py  # merge: take incoming
+git add -- path/file.py</code><button class="copy" type="button" data-copy="git restore --ours -- path/file.py&#10;git restore --theirs -- path/file.py&#10;git add -- path/file.py">copy</button></div></article>
+      <article class="setup-step"><h3>Delete/modify &amp; add/add</h3><p>These have no markers — <code>git status</code> names them. Accept the delete with <code>git rm</code>, the change with <code>git add</code>. Add/add carries both files with in-file markers; resolve like content.</p><div class="ex"><code>git status
+# "deleted by us: app/old.py" + your edits
+git rm app/old.py    # accept delete
+git add app/old.py   # or: keep your version</code><button class="copy" type="button" data-copy="git status&#10;# &quot;deleted by us: app/old.py&quot; + your edits&#10;git rm app/old.py    # accept delete&#10;git add app/old.py   # or: keep your version">copy</button></div></article>
+      <article class="setup-step"><h3>Tools for the hard ones</h3><p><code>git mergetool</code> walks every conflicted file in a real 3-way editor (meld, KDiff3, VS Code, difftastic). Binary files: pick a side, regenerate, then mark them unmergeable so Git stops trying to line-merge them.</p><div class="ex"><code>git config --global merge.tool meld
+git mergetool
+# once per pattern:
+echo "*.png binary" &gt;&gt; .gitattributes</code><button class="copy" type="button" data-copy="git config --global merge.tool meld&#10;git mergetool&#10;# once per pattern:&#10;echo &quot;*.png binary&quot; &gt;&gt; .gitattributes">copy</button></div></article>
+    </div>
+
+    <div class="laws reveal">
+      <div class="law"><div class="law-num">✓</div><div><h3>Finish the operation you started</h3><p>Every conflicted state has its own verb: <code>merge</code> → <code>git add -A</code> then <code>git commit</code> (or <code>merge --continue</code>) · <code>rebase</code> → <code>git add</code> then <code>rebase --continue</code>, once per stopped commit · <code>cherry-pick</code> → <code>cherry-pick --continue</code> · <code>stash pop</code> → resolve in place; changes are already applied, drop the entry when happy. Never mix verbs: <code>merge --continue</code> mid-rebase just errors.</p></div></div>
+      <div class="law"><div class="law-num">!</div><div><h3>Prove it’s really over</h3><p>Before continuing, scan for forgotten markers and half-resolved files: <code>git diff --check</code> flags leftover <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, and <code>git status</code> must be free of “both modified”. Run the tests — resolving is not the same as working.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="pushing">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">09 · Push after rebase</p>
+      <h2>Merging &amp; pushing after a rewrite</h2>
+      <p class="sec-sub">Rebase gave your commits new SHAs; the remote still points at the old ones. The rejection below is not a bug — it is Git noticing the mismatch on your behalf.</p>
+    </div>
+
+    <div class="conflict-panel reveal">
+      <h3>the rejection, verbatim</h3>
+      <div class="conflict-body"><span class="p">$ git push</span>
+To github.com:org/repo.git
+ <span class="mk"> ! [rejected]        feature/x -&gt; feature/x (non-fast-forward)</span>
+<span class="th">error: failed to push some refs to 'github.com:org/repo.git'</span>
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.</div>
+    </div>
+    <div class="conflict-panel reveal" style="margin-top:18px">
+      <h3>why it happens</h3>
+      <div class="conflict-body">old main ── A ── B ── C'   ← what the remote still has (pre-rebase)
+                ╲
+new main ── D ── A' ── B' ── C'  ← what you rebased to (same work, new SHAs)
+
+plain push can only add commits after the remote tip.
+The remote's C' is not an ancestor of your history →
+<span class="th">non-fast-forward.</span> And no: <span class="base">git pull now would merge the old commits back in.</span></div>
+    </div>
+
+    <div class="flow-grid reveal" style="margin-top:28px">
+      <article class="flow-card">
+        <h3>Publish a rewrite safely</h3>
+        <p><code>--force-with-lease</code> compares the remote tip to your <em>local remote-tracking ref</em> (usually <code>origin/feature/x</code>). A background <code>git fetch</code> can update that ref and silently weaken the check. Prefer the explicit form for anything sensitive. Bare <code>-f</code> on a shared branch is how work disappears. Protected branches are the real organizational control.</p>
+<div class="ex"><code>git fetch origin
+git push --force-with-lease origin HEAD
+# strongest: pin the SHA you expect to overwrite
+git push --force-with-lease=refs/heads/feature/x:$(git rev-parse origin/feature/x) origin HEAD
+# Git 2.30+ also: --force-if-includes</code><button class="copy" type="button" data-copy="git fetch origin&#10;git push --force-with-lease origin HEAD">copy</button></div>
+      </article>
+      <article class="flow-card">
+        <h3>Teammate: refresh after a rewrite</h3>
+        <p>Once the branch owner announces the rebase, everyone resets their local copy onto the new history — your old local commits stay reachable via reflog.</p>
+<div class="ex"><code>git fetch origin
+git switch feature/x
+git reset --hard origin/feature/x</code><button class="copy" type="button" data-copy="git fetch origin&#10;git switch feature/x&#10;git reset --hard origin/feature/x">copy</button></div>
+      </article>
+      <article class="flow-card">
+        <h3>If the force-push went wrong</h3>
+        <p>Nothing is instantly gone: the pre-rewrite tip sits in your local reflog, and GitHub’s branch compare / PR timeline still know the old SHAs. Recreate, then coordinate before touching remotes again.</p>
+<div class="ex"><code>git reflog
+# find the old tip, e.g. 9f2c1ab:
+git branch rescue 9f2c1ab
+git push origin rescue</code><button class="copy" type="button" data-copy="git reflog&#10;# find the old tip, e.g. 9f2c1ab:&#10;git branch rescue 9f2c1ab&#10;git push origin rescue">copy</button></div>
+      </article>
+    </div>
+
+    <div class="flow-grid reveal" style="margin-top:18px">
+      <article class="flow-card">
+        <h3>Landing: merge commit</h3>
+        <p><code>Create a merge commit</code> keeps the exact review topology — branch shape forever in history. Pick it when “what happened during this PR” matters (large features, audit trails).</p>
+      </article>
+      <article class="flow-card">
+        <h3>Landing: squash</h3>
+        <p><code>Squash and merge</code> collapses the PR into one commit on <code>main</code> — the usual default for linear history. Rebase onto latest <code>main</code> first so CI tests the merged result, not a guess.</p>
+      </article>
+      <article class="flow-card">
+        <h3>Landing: rebase &amp; merge</h3>
+        <p><code>Rebase and merge</code> replays every PR commit directly onto <code>main</code>, no merge commit. Clean, but loses PR grouping metadata and needs a conflict-free replay — squash is usually the sharper tool.</p>
+      </article>
+      <article class="flow-card">
+        <h3>Protected branches: no rewrites</h3>
+        <p>Force-push to <code>main</code> is blocked by design on sane remotes — that’s a feature, not friction. Rewrite personal branches; change public history only with team coordination (or a revert, section 10).</p>
+<div class="ex"><code># after merge, sweep up:
+git fetch --prune
+git branch -d feature/x
+git push origin --delete feature/x</code><button class="copy" type="button" data-copy="# after merge, sweep up:&#10;git fetch --prune&#10;git branch -d feature/x&#10;git push origin --delete feature/x">copy</button></div>
+      </article>
+    </div>
+  </div>
+</section>
+<section class="sec light alt" id="rescue">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">10 · Rescue</p>
+      <h2>When Git surprises you</h2>
+      <p class="sec-sub">Twelve scenarios everyone eventually hits. Symptom, cause, fix — and what prevents it next time. None of these mean you “broke Git”; they mean history has edges.</p>
+    </div>
+    <div class="setup-grid reveal">
+      <article class="setup-step"><span class="step-num">1</span><h3>Detached HEAD</h3><p>You checked out a commit or a PR ref, then committed — that work belongs to no branch. Save it in one move, or leave without it.</p><div class="ex"><code>git switch -c keep/my-work
+# leaving without keeping:
+git switch main</code><button class="copy" type="button" data-copy="git switch -c keep/my-work&#10;# leaving without keeping:&#10;git switch main">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">2</span><h3>Commit “lost” to reset or a bad rebase</h3><p>Reflog is a diary of every position HEAD held. Find the entry, then move back to it; ORIG_HEAD is the one-step shortcut.</p><div class="ex"><code>git reflog
+git reset --hard HEAD@{7}
+# right after the scary op:
+git reset --hard ORIG_HEAD</code><button class="copy" type="button" data-copy="git reflog&#10;git reset --hard HEAD@{7}&#10;# right after the scary op:&#10;git reset --hard ORIG_HEAD">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">3</span><h3>Dropped a stash you needed</h3><p>Dropped stashes often remain as unreachable commits <em>until garbage collection prunes them</em> — not a 30-day promise. Act immediately, avoid <code>git gc</code>, and inspect the patch before applying one.</p><div class="ex"><code>git fsck --unreachable | grep commit
+git stash apply &lt;found-sha&gt;</code><button class="copy" type="button" data-copy="git fsck --unreachable | grep commit&#10;git stash apply &lt;found-sha&gt;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">4</span><h3>Amend a commit already pushed</h3><p>Your branch, your rewrite: fix it locally, publish with a lease. Announce it if anyone else pulled the branch.</p><div class="ex"><code>git commit --amend
+git push --force-with-lease</code><button class="copy" type="button" data-copy="git commit --amend&#10;git push --force-with-lease">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">5</span><h3>Undo a merge that’s already on main</h3><p>Public history: revert, don’t rewrite. -m 1 keeps the mainline parent (the side the merge landed on). Gotcha — re-merging the old branch won’t re-apply until you revert the revert or rebase it fresh.</p><div class="ex"><code>git revert -m 1 &lt;merge-sha&gt;</code><button class="copy" type="button" data-copy="git revert -m 1 &lt;merge-sha&gt;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">6</span><h3>Wrong author email across recent commits</h3><p>Identity comes from the committing machine — set it per scope (section 01). Repair a range by amending author into each replayed commit.</p><div class="ex"><code>git rebase -i &amp;lt;base&amp;gt; \
+  --exec "git commit --amend --reset-author --no-edit"</code><button class="copy" type="button" data-copy="git rebase -i &amp;lt;base&amp;gt; \&#10;  --exec &quot;git commit --amend --reset-author --no-edit&quot;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">7</span><h3>Committed a secret</h3><p><strong>Rotate first</strong> — rewriting history does not erase forks, CI logs, or caches. Never pushed: amend/reset locally. Already published: revoke, freeze the repo, rewrite with <code>git filter-repo</code>, force-push deliberately, then have collaborators re-clone. See GitHub&#8217;s sensitive-data removal guide.</p><div class="ex"><code># never pushed — drop the leak from the last commit:
+git reset HEAD~1 -- secrets.env
+git commit --amend --no-edit
+# already published — after rotation + freeze:
+git filter-repo --invert-paths --path secrets.env</code><button class="copy" type="button" data-copy="git reset HEAD~1 -- secrets.env&#10;git commit --amend --no-edit">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">8</span><h3>A huge binary snuck into history</h3><p>Track big binaries with LFS before they’re committed. Already committed? size filters rewrite history — same coordination rules as any rewrite.</p><div class="ex"><code>git lfs track "*.psd"   # then commit .gitattributes</code><button class="copy" type="button" data-copy="git lfs track &quot;*.psd&quot;   # then commit .gitattributes">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">9</span><h3>Repository feels corrupted</h3><p>git fsck names the problem; a healthy remote is the fastest repair — re-clone and reapply unpushed work from reflog.</p><div class="ex"><code>git fsck --full
+# then: fresh clone + git format-patch if needed</code><button class="copy" type="button" data-copy="git fsck --full&#10;# then: fresh clone + git format-patch if needed">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">10</span><h3>Cherry-pick a merge commit</h3><p>A merge has two parents — pick must be told which one is the mainline, same rule as revert -m 1.</p><div class="ex"><code>git cherry-pick -m 1 &lt;merge-sha&gt;</code><button class="copy" type="button" data-copy="git cherry-pick -m 1 &lt;merge-sha&gt;">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">11</span><h3>Hunt the commit that broke it</h3><p>Bisect binary-searches history; with a test script it runs unattended from bad back to first-bad.</p><div class="ex"><code>git bisect start HEAD v1.2
+git bisect run npm test</code><button class="copy" type="button" data-copy="git bisect start HEAD v1.2&#10;git bisect run npm test">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">12</span><h3>Try a scary rebase without leaving your seat</h3><p>Worktrees are extra checkouts sharing one object store — experiment there, delete when done, main working copy untouched.</p><div class="ex"><code>git worktree add ../try-rebase feature/x</code><button class="copy" type="button" data-copy="git worktree add ../try-rebase feature/x">copy</button></div></article>
+    </div>
+  </div>
+</section>
+
+
+<section class="sec" id="quiz">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">11 · Quiz</p>
+      <h2>Check the mental model</h2>
+      <p class="sec-sub">Eleven questions. No trick flags — just whether the pointers and snapshots make sense.</p>
+    </div>
+    <div class="quiz-card reveal" id="quizCard">
+      <div class="quiz-meta"><span id="quizPos">Question 1 / 5</span><span id="quizScore">Score 0</span></div>
+      <div class="quiz-q" id="quizQ"></div>
+      <div class="quiz-opts" id="quizOpts"></div>
+      <p class="quiz-feedback" id="quizFeedback" role="status" aria-live="polite"></p>
+      <div class="quiz-nav">
+        <button class="btn primary" id="quizNext" type="button" disabled>Next</button>
+        <button class="btn ghost" id="quizRestart" type="button">Restart</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec light" id="cheatsheet">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <p class="kicker">12 · Cheat sheet</p>
+      <h2>Printable pocket card</h2>
+      <p class="sec-sub">The commands you’ll actually reach for. Print this section or save it as PDF.</p>
+    </div>
+    <div class="cheat reveal">
+      <div class="cheat-top">
+        <h3>git, decoded — cheat sheet</h3>
+        <button class="btn primary" type="button" onclick="window.print()">Print</button>
+      </div>
+      <div class="cheat-grid">
+        <div class="cheat-col"><h4>Daily</h4><ul>
+          <li><code>git status</code>What’s changed?</li>
+          <li><code>git add -p</code>Stage hunks interactively</li>
+          <li><code>git commit -m "…"</code>Record a snapshot</li>
+          <li><code>git diff</code>Unstaged changes</li>
+          <li><code>git diff --staged</code>What will commit</li>
+          <li><code>git switch &lt;b&gt;</code>Move HEAD to branch</li>
+        </ul></div>
+        <div class="cheat-col"><h4>Sync</h4><ul>
+          <li><code>git fetch</code>Download refs only</li>
+          <li><code>git pull</code>Fetch + integrate</li>
+          <li><code>git push -u origin HEAD</code>Publish + track</li>
+          <li><code>git clone &lt;url&gt;</code>Copy a remote repo</li>
+        </ul></div>
+        <div class="cheat-col"><h4>History</h4><ul>
+          <li><code>git log --oneline --graph</code>Pretty history</li>
+          <li><code>git blame &lt;file&gt;</code>Who last touched a line</li>
+          <li><code>git show &lt;rev&gt;</code>Inspect one commit</li>
+          <li><code>git stash -u</code>Shelve dirty work</li>
+        </ul></div>
+        <div class="cheat-col"><h4>Repair</h4><ul>
+          <li><code>git restore &lt;f&gt;</code>Discard worktree edits</li>
+          <li><code>git restore --staged &lt;f&gt;</code>Unstage</li>
+          <li><code>git reset --soft HEAD~1</code>Undo commit, keep changes</li>
+          <li><code>git rebase --abort</code>Bail out of rebase</li>
+          <li><code>git reflog</code>Find “lost” commits</li>
+        </ul></div>
+        <div class="cheat-col"><h4>Rebase</h4><ul>
+          <li><code>git pull --rebase --autostash</code>Update without merge noise</li>
+          <li><code>git rebase origin/main</code>Replay onto latest main</li>
+          <li><code>git rebase -i origin/main</code>Tidy history interactively</li>
+          <li><code>git rebase --continue</code>Resume after resolving</li>
+          <li><code>git rebase --skip / --abort</code>Drop commit / undo all</li>
+          <li><code>git rebase --onto X Y b</code>Transplant a range</li>
+        </ul></div>
+        <div class="cheat-col"><h4>Publish safely</h4><ul>
+          <li><code>git push --force-with-lease</code>Publish a rewrite (never bare -f)</li>
+          <li><code>git fetch --prune</code>Drop vanished remote branches</li>
+          <li><code>git reset --hard origin/&lt;b&gt;</code>Refresh after a rewrite</li>
+          <li><code>git revert -m 1 &lt;merge&gt;</code>Undo a pushed merge</li>
+        </ul></div>
+        <div class="cheat-col"><h4>Conflicts</h4><ul>
+          <li><code>merge.conflictStyle zdiff3</code>See the base version</li>
+          <li><code>git diff --name-only --diff-filter=U</code>List conflicted files</li>
+          <li><code>git checkout --ours &lt;f&gt;</code>Take your side (merge)</li>
+          <li><code>git checkout --theirs &lt;f&gt;</code>Take incoming / replayed commit</li>
+          <li><code>git mergetool</code>3-way editor per file</li>
+          <li><code>rerere.enabled true</code>Never resolve twice</li>
+        </ul></div>
+
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-in">
+    <div>
+      <a class="logo" href="#top">git<span class="logo-comma">,</span> decoded</a>
+      <p style="margin-top:12px">Built for developers who want the model, not a wall of man pages. Snapshots · pointers · practice.</p>
+    </div>
+    <div class="footer-links">
+      <a href="#commands">Commands</a>
+      <a href="#internals">Internals</a>
+      <a href="#cheatsheet">Cheat sheet</a>
+      <a href="#quiz">Quiz</a>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/script.js" defer></script>
+</body>
+</html>
