@@ -286,6 +286,11 @@ section{scroll-margin-top:calc(var(--nav-h) + 20px)}
   .uro .bar,.uro .ttag{display:none}
   .cta-row .btn{width:100%;text-align:center}
 }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+  .js .reveal{opacity:1;transform:none}
+}
 @media print{
   .progress,.nav,.burger,.mobile-nav,.cta-row,.hero-chips,.terminal,.branchline,.quiz-card,.btn,.copy{display:none!important}
   body{background:#fff;color:#111}
@@ -407,7 +412,7 @@ git config --global merge.conflictStyle zdiff3
 git config --global rerere.enabled true
 git config --global rerere.autoupdate true</code><button class="copy" type="button" data-copy="git config --global fetch.prune true&#10;git config --global push.default current&#10;git config --global push.autoSetupRemote true&#10;git config --global merge.conflictStyle zdiff3&#10;git config --global rerere.enabled true&#10;git config --global rerere.autoupdate true">copy</button></div></article>
     </div>
-    <p class="setup-verify reveal">Verify: <code>git config --list --show-origin | head</code> — you should see your name, email, and defaults.</p>
+    <p class="setup-verify reveal">Verify: <code>git --version</code> (this guide assumes Git ≥ 2.40 — <code>zdiff3</code> needs 2.35, <code>push.autoSetupRemote</code> needs 2.37) then <code>git config --list --show-origin | head</code> — you should see your name, email, and defaults.</p>
   </div>
 </section>
 
@@ -431,7 +436,7 @@ git config --global rerere.autoupdate true</code><button class="copy" type="butt
           <div class="flag"><code>--amend</code><span>Rewrite the tip commit (local only)</span></div>
           <div class="flag"><code>--force-with-lease</code><span>Safer force-push than <em>--force</em></span></div>
         </div>
-        <p class="src-note">Illustrative ranks for learning priority — your team’s mix will differ.</p>
+        <p class="src-note">Illustrative ranks for learning priority — qualitative, not measured telemetry. Your team’s mix will differ.</p>
       </aside>
     </div>
   </div>
@@ -611,7 +616,7 @@ git push --force-with-lease</code><button class="copy" type="button" data-copy="
       <p class="sec-sub">Rebase replays your commits onto a new base — same content, brand-new objects, brand-new SHAs. Every benefit and every hazard follows from that one fact.</p>
     </div>
     <div class="setup-grid reveal">
-      <article class="setup-step"><span class="step-num">1</span><h3>Update onto latest main</h3><p>Replay your commits on top of the new tip — history stays linear, no merge noise. Conflicts return per replayed commit, so expect round 2, 3 …</p><div class="ex"><code>git fetch origin
+      <article class="setup-step"><span class="step-num">1</span><h3>Update onto latest main</h3><p>Working tree must be clean first — commit, stash, or rely on <code>--autostash</code>. Then replay onto the new tip: history stays linear. Conflicts return per replayed commit, so expect round 2, 3 … Re-run tests after every resolution, not only at the end.</p><div class="ex"><code>git fetch origin
 git rebase origin/main
 # daily habit once configured:
 git pull --rebase --autostash</code><button class="copy" type="button" data-copy="git fetch origin&#10;git rebase origin/main&#10;# daily habit once configured:&#10;git pull --rebase --autostash">copy</button></div></article>
@@ -676,9 +681,9 @@ git config --global rerere.autoupdate true</code><button class="copy" type="butt
     <div class="setup-grid reveal" style="margin-top:28px">
       <article class="setup-step"><h3>Triage before editing</h3><p>Not every conflict shows markers. <code>UU</code> both modified · <code>AA</code> both added · <code>DU</code>/<code>UD</code> one side deleted · <code>AU</code>/<code>UA</code> one side added · rename/rename forces one new name.</p><div class="ex"><code>git status --short
 git diff --name-only --diff-filter=U</code><button class="copy" type="button" data-copy="git status --short&#10;git diff --name-only --diff-filter=U">copy</button></div></article>
-      <article class="setup-step"><h3>Whole-file decisions</h3><p>When one side should simply win, skip line surgery. In a <em>merge</em>: ours = your branch. In a <em>rebase</em>: inverted — theirs = the commit being replayed.</p><div class="ex"><code>git checkout --ours &lt;file&gt;   # merge: keep your side
-git checkout --theirs &lt;file&gt; # merge: take incoming
-git add &lt;file&gt;</code><button class="copy" type="button" data-copy="git checkout --ours &lt;file&gt;   # merge: keep your side&#10;git checkout --theirs &lt;file&gt; # merge: take incoming&#10;git add &lt;file&gt;">copy</button></div></article>
+      <article class="setup-step"><h3>Whole-file decisions</h3><p>When one side should simply win, skip line surgery — this <em>discards the other side entirely</em>. Prefer <code>git restore</code> (Git 2.23+) over overloaded <code>checkout</code>. Always put <code>--</code> before the path. In a <em>merge</em>: ours = your branch. In a <em>rebase</em>: inverted — theirs = the commit being replayed.</p><div class="ex"><code>git restore --ours -- path/file.py    # merge: keep your side
+git restore --theirs -- path/file.py  # merge: take incoming
+git add -- path/file.py</code><button class="copy" type="button" data-copy="git restore --ours -- path/file.py&#10;git restore --theirs -- path/file.py&#10;git add -- path/file.py">copy</button></div></article>
       <article class="setup-step"><h3>Delete/modify &amp; add/add</h3><p>These have no markers — <code>git status</code> names them. Accept the delete with <code>git rm</code>, the change with <code>git add</code>. Add/add carries both files with in-file markers; resolve like content.</p><div class="ex"><code>git status
 # "deleted by us: app/old.py" + your edits
 git rm app/old.py    # accept delete
@@ -728,10 +733,12 @@ The remote's C' is not an ancestor of your history →
     <div class="flow-grid reveal" style="margin-top:28px">
       <article class="flow-card">
         <h3>Publish a rewrite safely</h3>
-        <p><code>--force-with-lease</code> forces only if the remote tip is still exactly what you last fetched. If a teammate pushed meanwhile, the push refuses and nothing is clobbered. Bare <code>-f</code> on a shared branch is how work disappears.</p>
-<div class="ex"><code>git push --force-with-lease origin HEAD
-# alias it so the safe one is the fast one:
-git config --global alias.fp "push --force-with-lease"</code><button class="copy" type="button" data-copy="git push --force-with-lease origin HEAD&#10;# alias it so the safe one is the fast one:&#10;git config --global alias.fp &quot;push --force-with-lease&quot;">copy</button></div>
+        <p><code>--force-with-lease</code> compares the remote tip to your <em>local remote-tracking ref</em> (usually <code>origin/feature/x</code>). A background <code>git fetch</code> can update that ref and silently weaken the check. Prefer the explicit form for anything sensitive. Bare <code>-f</code> on a shared branch is how work disappears. Protected branches are the real organizational control.</p>
+<div class="ex"><code>git fetch origin
+git push --force-with-lease origin HEAD
+# strongest: pin the SHA you expect to overwrite
+git push --force-with-lease=refs/heads/feature/x:$(git rev-parse origin/feature/x) origin HEAD
+# Git 2.30+ also: --force-if-includes</code><button class="copy" type="button" data-copy="git fetch origin&#10;git push --force-with-lease origin HEAD">copy</button></div>
       </article>
       <article class="flow-card">
         <h3>Teammate: refresh after a rewrite</h3>
@@ -789,15 +796,18 @@ git switch main</code><button class="copy" type="button" data-copy="git switch -
 git reset --hard HEAD@{7}
 # right after the scary op:
 git reset --hard ORIG_HEAD</code><button class="copy" type="button" data-copy="git reflog&#10;git reset --hard HEAD@{7}&#10;# right after the scary op:&#10;git reset --hard ORIG_HEAD">copy</button></div></article>
-      <article class="setup-step"><span class="step-num">3</span><h3>Dropped a stash you needed</h3><p>Dropped stashes stay as unreachable commits for ~30 days. Fish them out of the object database.</p><div class="ex"><code>git fsck --unreachable | grep commit
+      <article class="setup-step"><span class="step-num">3</span><h3>Dropped a stash you needed</h3><p>Dropped stashes often remain as unreachable commits <em>until garbage collection prunes them</em> — not a 30-day promise. Act immediately, avoid <code>git gc</code>, and inspect the patch before applying one.</p><div class="ex"><code>git fsck --unreachable | grep commit
 git stash apply &lt;found-sha&gt;</code><button class="copy" type="button" data-copy="git fsck --unreachable | grep commit&#10;git stash apply &lt;found-sha&gt;">copy</button></div></article>
       <article class="setup-step"><span class="step-num">4</span><h3>Amend a commit already pushed</h3><p>Your branch, your rewrite: fix it locally, publish with a lease. Announce it if anyone else pulled the branch.</p><div class="ex"><code>git commit --amend
 git push --force-with-lease</code><button class="copy" type="button" data-copy="git commit --amend&#10;git push --force-with-lease">copy</button></div></article>
       <article class="setup-step"><span class="step-num">5</span><h3>Undo a merge that’s already on main</h3><p>Public history: revert, don’t rewrite. -m 1 keeps the mainline parent (the side the merge landed on). Gotcha — re-merging the old branch won’t re-apply until you revert the revert or rebase it fresh.</p><div class="ex"><code>git revert -m 1 &lt;merge-sha&gt;</code><button class="copy" type="button" data-copy="git revert -m 1 &lt;merge-sha&gt;">copy</button></div></article>
       <article class="setup-step"><span class="step-num">6</span><h3>Wrong author email across recent commits</h3><p>Identity comes from the committing machine — set it per scope (section 01). Repair a range by amending author into each replayed commit.</p><div class="ex"><code>git rebase -i &amp;lt;base&amp;gt; \
   --exec "git commit --amend --reset-author --no-edit"</code><button class="copy" type="button" data-copy="git rebase -i &amp;lt;base&amp;gt; \&#10;  --exec &quot;git commit --amend --reset-author --no-edit&quot;">copy</button></div></article>
-      <article class="setup-step"><span class="step-num">7</span><h3>Committed a secret</h3><p>Rotation beats rewriting: revoke the credential everywhere first — forks and caches keep copies. Then scrub before it ever ships (filter-repo / BFG) and force with coordination.</p><div class="ex"><code>git filter-repo --invert-paths \
-  --path secrets.env</code><button class="copy" type="button" data-copy="git filter-repo --invert-paths \&#10;  --path secrets.env">copy</button></div></article>
+      <article class="setup-step"><span class="step-num">7</span><h3>Committed a secret</h3><p><strong>Rotate first</strong> — rewriting history does not erase forks, CI logs, or caches. Never pushed: amend/reset locally. Already published: revoke, freeze the repo, rewrite with <code>git filter-repo</code>, force-push deliberately, then have collaborators re-clone. See GitHub&#8217;s sensitive-data removal guide.</p><div class="ex"><code># never pushed — drop the leak from the last commit:
+git reset HEAD~1 -- secrets.env
+git commit --amend --no-edit
+# already published — after rotation + freeze:
+git filter-repo --invert-paths --path secrets.env</code><button class="copy" type="button" data-copy="git reset HEAD~1 -- secrets.env&#10;git commit --amend --no-edit">copy</button></div></article>
       <article class="setup-step"><span class="step-num">8</span><h3>A huge binary snuck into history</h3><p>Track big binaries with LFS before they’re committed. Already committed? size filters rewrite history — same coordination rules as any rewrite.</p><div class="ex"><code>git lfs track "*.psd"   # then commit .gitattributes</code><button class="copy" type="button" data-copy="git lfs track &quot;*.psd&quot;   # then commit .gitattributes">copy</button></div></article>
       <article class="setup-step"><span class="step-num">9</span><h3>Repository feels corrupted</h3><p>git fsck names the problem; a healthy remote is the fastest repair — re-clone and reapply unpushed work from reflog.</p><div class="ex"><code>git fsck --full
 # then: fresh clone + git format-patch if needed</code><button class="copy" type="button" data-copy="git fsck --full&#10;# then: fresh clone + git format-patch if needed">copy</button></div></article>
@@ -821,7 +831,7 @@ git bisect run npm test</code><button class="copy" type="button" data-copy="git 
       <div class="quiz-meta"><span id="quizPos">Question 1 / 5</span><span id="quizScore">Score 0</span></div>
       <div class="quiz-q" id="quizQ"></div>
       <div class="quiz-opts" id="quizOpts"></div>
-      <p class="quiz-feedback" id="quizFeedback"></p>
+      <p class="quiz-feedback" id="quizFeedback" role="status" aria-live="polite"></p>
       <div class="quiz-nav">
         <button class="btn primary" id="quizNext" type="button" disabled>Next</button>
         <button class="btn ghost" id="quizRestart" type="button">Restart</button>
@@ -957,7 +967,7 @@ const GLOSSARY = [
   {t:'force-with-lease', tag:'safety', d:'Force-push that fails if the remote moved since you last fetched.'},
   {t:'merge commit', tag:'object', d:'Commit with two parents, joining histories.'},
   {t:'tag', tag:'object', d:'A (usually immutable) name for a commit — often releases.'},
-  {t:'stash', tag:'workflow', d:'Temporary shelf for dirty working-tree changes.'},,
+  {t:'stash', tag:'workflow', d:'Temporary shelf for dirty working-tree changes.'},
   {t:'merge base', tag:'workflow', d:'Latest common ancestor of two refs — the “why” behind every conflict.'},
   {t:'non-fast-forward', tag:'safety', d:'Push rejected because the remote holds commits your history lacks — typical after rebasing.'},
   {t:'zdiff3', tag:'workflow', d:'Conflict style that also shows the shared base between ||||||| and =======.'},
@@ -987,7 +997,7 @@ const COMMANDS = [
   {name:'git reset', tier:'power', desc:'Move a branch pointer and optionally the index/worktree.', ex:'git reset --soft HEAD~1'},
   {name:'git cherry-pick', tier:'power', desc:'Copy a commit onto the current branch.', ex:'git cherry-pick abc1234'},
   {name:'git reflog', tier:'power', desc:'Recover commits after resets or bad checkouts.', ex:'git reflog'},
-  {name:'git bisect', tier:'power', desc:'Binary-search history to find the commit that introduced a bug.', ex:'git bisect start'},,
+  {name:'git bisect', tier:'power', desc:'Binary-search history to find the commit that introduced a bug.', ex:'git bisect start'},
   {name:'git revert', tier:'weekly', desc:'Undo commits by applying their inverse — safe on shared history.', ex:'git revert -m 1 8f3a21c'},
   {name:'git config', tier:'weekly', desc:'Scoped settings that decide how every other command behaves.', ex:'git config --global pull.rebase true'},
   {name:'git mergetool', tier:'power', desc:'Walk conflicted files in a 3-way editor.', ex:'git mergetool'},
@@ -1001,7 +1011,7 @@ const QUIZ = [
   {q:'Creating a new branch typically…', opts:['Copies every file into a new folder','Creates a tiny ref pointing at a commit','Runs a full backup of the remote','Locks the repository'], a:1, why:'A branch is a pointer (about 41 bytes of hash text).'},
   {q:'git add prepares changes for…', opts:['The remote origin','The next commit via the index/staging area','Immediate push','Deleting the working tree'], a:1, why:'The index is the proposed next snapshot.'},
   {q:'Detached HEAD means…', opts:['Your remote is down','HEAD points directly at a commit, not a branch','Git deleted your branch','You must force-push'], a:1, why:'Fine for inspection; create a branch before making commits you want to keep.'},
-  {q:'The safest common force-push option is…', opts:['--force','--force-with-lease','--hard','--no-verify'], a:1, why:'--force-with-lease refuses to overwrite unexpected remote commits.'},,
+  {q:'The safest common force-push option is…', opts:['--force','--force-with-lease','--hard','--no-verify'], a:1, why:'--force-with-lease refuses to overwrite unexpected remote commits.'},
   {q:'You hit a conflict mid-rebase. What does --theirs refer to?', opts:['The version from the commit being replayed','Your branch’s current version','The version on origin/main','The merge base'], a:0, why:'Rebase flips ours/theirs — you are building on the base (ours) and replaying your old commits (theirs).'},
   {q:'After rebasing an already-pushed branch, a plain git push fails because…', opts:['The remote still has the pre-rebase commits — non-fast-forward','You forgot -u','GitHub blocks rebased pushes','CI locks the branch'], a:0, why:'Rewritten SHAs mean the remote tip is no longer an ancestor of yours. Publish with --force-with-lease.'},
   {q:'What does --force-with-lease actually check?', opts:['That the remote tip equals what you last fetched','That tests passed','That your message is clean','Nothing — it is just a quieter -f'], a:0, why:'If someone pushed since your last fetch, the lease fails and their work is safe.'},
